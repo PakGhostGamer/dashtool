@@ -1,3 +1,6 @@
+import 'smoothscroll-polyfill/dist/smoothscroll.min.js';
+import { polyfill } from 'smoothscroll-polyfill';
+polyfill();
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
