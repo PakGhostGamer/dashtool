@@ -137,7 +137,7 @@ export function FilterableTable({
         )}
         
         {showFilters && (
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex flex-col sm:flex-row gap-3">
             {/* Global search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -146,7 +146,7 @@ export function FilterableTable({
                 placeholder="Search all columns..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-colors"
               />
             </div>
 
@@ -154,7 +154,7 @@ export function FilterableTable({
             {(searchTerm || Object.values(filters).some(Boolean)) && (
               <button
                 onClick={clearAllFilters}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50"
+                className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:text-red-800 border border-red-300 rounded-lg hover:bg-red-50 transition-colors shadow-sm"
               >
                 <X className="w-4 h-4" />
                 Clear Filters
@@ -166,72 +166,89 @@ export function FilterableTable({
 
       {/* Column filters */}
       {showFilters && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
-          {columns
-            .filter(col => col.filterable !== false)
-            .map(column => (
-              <div key={column.key} className="space-y-1">
-                <label className="block text-xs font-medium text-gray-600">
-                  {column.label}
-                </label>
-                {column.type === 'number' ? (
-                  <select
-                    value={filters[column.key] || ''}
-                    onChange={(e) => setFilters(prev => ({
-                      ...prev,
-                      [column.key]: e.target.value
-                    }))}
-                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">All</option>
-                    {getUniqueValues(column.key).map(value => (
-                      <option key={value} value={value}>
-                        {formatCellValue(value, column.type)}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    type="text"
-                    placeholder={`Filter ${column.label}...`}
-                    value={filters[column.key] || ''}
-                    onChange={(e) => setFilters(prev => ({
-                      ...prev,
-                      [column.key]: e.target.value
-                    }))}
-                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                )}
-              </div>
-            ))}
+        <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg shadow-sm">
+          <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+            <Filter className="w-5 h-5 mr-2 text-blue-600" />
+            Advanced Filters
+          </h4>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+            {columns
+              .filter(col => col.filterable !== false)
+              .map(column => (
+                <div key={column.key} className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    {column.label}
+                  </label>
+                  {column.type === 'number' ? (
+                    <select
+                      value={filters[column.key] || ''}
+                      onChange={(e) => setFilters(prev => ({
+                        ...prev,
+                        [column.key]: e.target.value
+                      }))}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm transition-colors"
+                    >
+                      <option value="">All</option>
+                      {getUniqueValues(column.key).map(value => (
+                        <option key={value} value={value}>
+                          {formatCellValue(value, column.type)}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      placeholder={`Filter ${column.label}...`}
+                      value={filters[column.key] || ''}
+                      onChange={(e) => setFilters(prev => ({
+                        ...prev,
+                        [column.key]: e.target.value
+                      }))}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm transition-colors"
+                    />
+                  )}
+                </div>
+              ))}
+          </div>
         </div>
       )}
 
       {/* Results summary */}
       {showFilters && (
-        <div className="text-sm text-gray-600">
-          Showing {sortedData.length} of {data.length} records
-          {searchTerm && ` (filtered by "${searchTerm}")`}
+        <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
+          <div className="text-sm text-gray-700">
+            <span className="font-semibold">{sortedData.length}</span> of <span className="font-semibold">{data.length}</span> records
+            {searchTerm && (
+              <span className="text-blue-600 ml-2">
+                (filtered by "{searchTerm}")
+              </span>
+            )}
+          </div>
+          {sortedData.length > 0 && (
+            <div className="text-xs text-gray-500">
+              Click column headers to sort
+            </div>
+          )}
         </div>
       )}
 
       {/* Table */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
         <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b">
+          <thead className="bg-gray-50">
+            <tr>
               {columns.map(column => (
                 <th
                   key={column.key}
-                  className={`text-left py-2 px-4 font-medium ${
-                    column.sortable !== false ? 'cursor-pointer hover:bg-gray-100' : ''
+                  className={`text-left py-3 px-4 font-semibold text-gray-700 border-b border-gray-200 ${
+                    column.sortable !== false ? 'cursor-pointer hover:bg-gray-100 transition-colors' : ''
                   } ${column.width || ''}`}
                   onClick={() => column.sortable !== false && handleSort(column.key)}
                 >
                   <div className="flex items-center gap-1">
                     {column.label}
                     {column.sortable !== false && sortColumn === column.key && (
-                      <span className="text-blue-600">
+                      <span className="text-blue-600 font-bold">
                         {sortDirection === 'asc' ? '↑' : '↓'}
                       </span>
                     )}
@@ -240,19 +257,19 @@ export function FilterableTable({
               ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-white">
             {sortedData.slice(0, maxRows).map((row, index) => (
               <tr
                 key={index}
-                className={`border-b hover:bg-gray-50 ${
+                className={`border-b border-gray-100 hover:bg-blue-50 transition-colors ${
                   onRowClick ? 'cursor-pointer' : ''
-                }`}
+                } ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}
                 onClick={() => onRowClick && onRowClick(row)}
               >
                 {columns.map(column => (
                   <td
                     key={column.key}
-                    className="py-2 px-4"
+                    className="py-3 px-4 text-gray-900"
                   >
                     {formatCellValue(row[column.key], column.type)}
                   </td>
