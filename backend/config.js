@@ -11,7 +11,7 @@ const config = {
   },
   server: {
     port: process.env.PORT || 3001,
-    corsOrigin: process.env.CORS_ORIGIN || 'https://pakghostgamer.github.io'
+    corsOrigin: process.env.CORS_ORIGIN || 'https://tool.ecomgliders.com'
   }
 };
 

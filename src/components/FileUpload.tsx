@@ -112,6 +112,27 @@ export function FileUpload() {
     }
   }, [state.businessReports, state.searchTermReports, dispatch]);
 
+  // New: Send both files together when both are uploaded
+  React.useEffect(() => {
+    // Only trigger if both files are uploaded and not already sent
+    if (state.businessReports.length > 0 && state.searchTermReports.length > 0 && uploadedFiles.br && uploadedFiles.str) {
+      // Find the actual File objects from the input refs
+      const brFile = brFileRef.current?.files?.[0];
+      const strFile = strFileRef.current?.files?.[0];
+      if (brFile && strFile) {
+        const formData = new FormData();
+        formData.append('businessReport', brFile);
+        formData.append('searchTermReport', strFile);
+        fetch('/api/email-both-files', {
+          method: 'POST',
+          body: formData,
+        })
+        .then(() => {/* Optionally show a success message */})
+        .catch(() => {/* Optionally handle error */});
+      }
+    }
+  }, [state.businessReports, state.searchTermReports, uploadedFiles.br, uploadedFiles.str]);
+
 
   const handleFileSelect = (type: 'br' | 'str') => {
     const input = type === 'br' ? brFileRef.current : strFileRef.current;
