@@ -235,7 +235,7 @@ export function FilterableTable({
                 placeholder="Search all columns..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-colors"
+                className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
               />
             </div>
 
@@ -243,7 +243,7 @@ export function FilterableTable({
             {(searchTerm || Object.values(filters).some(Boolean)) && (
               <button
                 onClick={clearAllFilters}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:text-red-800 border border-red-300 rounded-lg hover:bg-red-50 transition-colors shadow-sm"
+                className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 border border-red-300 rounded-lg shadow-sm"
               >
                 Clear Filters
               </button>
@@ -273,7 +273,7 @@ export function FilterableTable({
                         ...prev,
                         [column.key]: e.target.value
                       }))}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm transition-colors"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
                     >
                       <option value="">All</option>
                       {getUniqueValues(column.key).map(value => (
@@ -291,7 +291,7 @@ export function FilterableTable({
                         ...prev,
                         [column.key]: e.target.value
                       }))}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm transition-colors"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
                     />
                   )}
                 </div>

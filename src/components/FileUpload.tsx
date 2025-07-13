@@ -181,7 +181,7 @@ export function FileUpload() {
 
         <div className="grid lg:grid-cols-2 gap-8 mb-12">
           {/* Business Report Upload */}
-          <Card className="hover:shadow-xl transition-all duration-300 border-2 hover:border-blue-200">
+          <Card className="border-2">
             <CardHeader className="pb-4">
               <div className="flex items-center gap-3 mb-2">
                 <div className="p-2 bg-green-100 rounded-lg">
@@ -316,7 +316,7 @@ export function FileUpload() {
           </Card>
 
           {/* Search Term Report Upload */}
-          <Card className="hover:shadow-xl transition-all duration-300 border-2 hover:border-blue-200">
+          <Card className="border-2">
             <CardHeader className="pb-4">
               <div className="flex items-center gap-3 mb-2">
                 <div className="p-2 bg-blue-100 rounded-lg">

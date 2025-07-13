@@ -80,7 +80,7 @@ export function LandingPage({ onLogin, onGuest }: LandingPageProps) {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
           {features.map((feature, index) => (
-            <Card key={index} className="hover:shadow-lg transition-shadow">
+            <Card key={index}>
               <CardContent className="p-6">
                 <div className="text-blue-600 mb-4">{feature.icon}</div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">

@@ -122,10 +122,10 @@ export function Dashboard() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-2 px-6 py-4 text-sm font-medium ${
                     activeTab === tab.id
                       ? 'border-b-2 border-blue-600 text-blue-600 bg-blue-50'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      : 'text-gray-600'
                   }`}
                 >
                   {tab.icon}

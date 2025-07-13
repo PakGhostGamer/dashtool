@@ -1,35 +1,51 @@
 import React from 'react';
 import { clsx } from 'clsx';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps {
+  children: React.ReactNode;
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
-  children: React.ReactNode;
+  className?: string;
+  onClick?: () => void;
+  disabled?: boolean;
+  type?: 'button' | 'submit' | 'reset';
 }
 
 export function Button({ 
+  children, 
   variant = 'primary', 
   size = 'md', 
-  className, 
-  children, 
-  ...props 
+  className = "",
+  onClick,
+  disabled = false,
+  type = 'button'
 }: ButtonProps) {
+  const baseClasses = 'inline-flex items-center justify-center rounded-xl font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:pointer-events-none disabled:opacity-50 shadow-[4px_4px_16px_#e0e0e0,_-4px_-4px_16px_#ffffff] backdrop-blur-sm';
+  
+  const variantClasses = {
+    'bg-blue-600 text-white': variant === 'primary',
+    'bg-gray-100 text-gray-900': variant === 'secondary',
+    'border border-gray-200 bg-white/70': variant === 'outline',
+    'bg-white/70': variant === 'ghost',
+  };
+
+  const sizeClasses = {
+    'px-3 py-1.5 text-sm': size === 'sm',
+    'px-4 py-2 text-sm': size === 'md',
+    'px-6 py-3 text-base': size === 'lg',
+  };
+
   return (
     <button
+      type={type}
       className={clsx(
-        'inline-flex items-center justify-center rounded-xl font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:pointer-events-none disabled:opacity-50 shadow-[4px_4px_16px_#e0e0e0,_-4px_-4px_16px_#ffffff] backdrop-blur-md',
-        {
-          'bg-blue-600 text-white hover:bg-blue-700': variant === 'primary',
-          'bg-gray-100 text-gray-900 hover:bg-gray-200': variant === 'secondary',
-          'border border-gray-200 bg-white/70 hover:bg-gray-50': variant === 'outline',
-          'hover:bg-gray-100 bg-white/70': variant === 'ghost',
-          'h-8 px-3 text-sm': size === 'sm',
-          'h-10 px-5': size === 'md',
-          'h-12 px-7 text-lg': size === 'lg'
-        },
+        baseClasses,
+        variantClasses,
+        sizeClasses,
         className
       )}
-      {...props}
+      onClick={onClick}
+      disabled={disabled}
     >
       {children}
     </button>
