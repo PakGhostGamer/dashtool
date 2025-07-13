@@ -374,11 +374,14 @@ export function OverallView() {
       </div>
 
       {/* Match Type Performance Analysis */}
-      <Card className="mt-8">
-        <CardHeader>
+      <Card className="mt-8 overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-100">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Match Type Performance Analysis</h3>
-            <div className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">
+            <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+              <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full mr-3"></div>
+              Match Type Performance Analysis
+            </h3>
+            <div className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full shadow-sm">
               <span className="w-2 h-2 bg-blue-500 rounded-full mr-1"></span>
               NEW
             </div>
@@ -563,9 +566,12 @@ export function OverallView() {
 
 
       {/* Detailed BR Data Table */}
-      <Card className="mt-8">
-        <CardHeader>
-          <h3 className="text-lg font-semibold">Business Report Data (Detailed)</h3>
+      <Card className="mt-8 overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b border-gray-100">
+          <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+            <div className="w-2 h-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full mr-3"></div>
+            Business Report Data (Detailed)
+          </h3>
         </CardHeader>
         <CardContent>
           {state.businessReports.length === 0 ? (
@@ -589,9 +595,12 @@ export function OverallView() {
       </Card>
 
       {/* Amazon Metrics Summary */}
-      <Card className="mt-8">
-        <CardHeader>
-          <h3 className="text-lg font-semibold">Key Amazon Metrics</h3>
+      <Card className="mt-8 overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-orange-50 to-amber-50 border-b border-gray-100">
+          <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+            <div className="w-2 h-2 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full mr-3"></div>
+            Key Amazon Metrics
+          </h3>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -654,9 +663,12 @@ export function OverallView() {
       </Card>
 
       {/* Remove Sales Over Time chart and add Wasted Spend Campaigns table */}
-      <Card className="mt-8">
-        <CardHeader>
-          <h3 className="text-lg font-semibold text-red-700">💸 Wasted Spend Campaigns (Account-wide)</h3>
+      <Card className="mt-8 overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-red-50 to-pink-50 border-b border-gray-100">
+          <h3 className="text-lg font-semibold text-red-700 flex items-center">
+            <div className="w-2 h-2 bg-gradient-to-r from-red-500 to-pink-500 rounded-full mr-3"></div>
+            💸 Wasted Spend Campaigns (Account-wide)
+          </h3>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">

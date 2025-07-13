@@ -198,6 +198,12 @@ export function PPCView() {
   // Calculate total sales for percentage
   const totalSales = state.businessReports.reduce((sum, item) => sum + item.sales, 0);
   const organicSales = Math.max(0, totalSales - ppcSales);
+  
+  // Additional metrics for PPC KPI cards
+  const totalSessions = state.businessReports.reduce((sum, item) => sum + item.sessions, 0);
+  const totalUnits = state.businessReports.reduce((sum, item) => sum + item.unitsOrdered, 0);
+  const conversionRate = totalSessions > 0 ? (totalUnits / totalSessions) * 100 : 0;
+  const avgOrderValue = totalUnits > 0 ? totalSales / totalUnits : 0;
 
   const kpis = [
     {
@@ -310,6 +316,43 @@ export function PPCView() {
           {cvr.toFixed(2)}% CVR
         </div>
       )
+    },
+    {
+      title: 'Total Sessions',
+      value: totalSessions,
+      format: 'number' as const,
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        </svg>
+      ),
+      extra: (
+        <div className="inline-flex items-center mt-1 text-blue-700 bg-blue-100 rounded-lg px-2.5 py-1 text-xs font-semibold shadow-sm">
+          <svg className="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+          {conversionRate.toFixed(2)}% CVR
+        </div>
+      )
+    },
+    {
+      title: 'Total Units',
+      value: totalUnits,
+      format: 'number' as const,
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+        </svg>
+      ),
+      extra: (
+        <div className="inline-flex items-center mt-1 text-purple-700 bg-purple-100 rounded-lg px-2.5 py-1 text-xs font-semibold shadow-sm">
+          <svg className="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+          {formatCurrency(avgOrderValue)} AOV
+        </div>
+      )
     }
   ];
 
@@ -330,9 +373,12 @@ export function PPCView() {
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Replace Spend vs Sales Over Time with Wasted Spend Campaigns Table */}
-        <Card>
-          <CardHeader>
-            <h3 className="text-lg font-semibold text-red-700">💸 Wasted Spend Campaigns</h3>
+        <Card className="overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-red-50 to-pink-50 border-b border-gray-100">
+            <h3 className="text-lg font-semibold text-red-700 flex items-center">
+              <div className="w-2 h-2 bg-gradient-to-r from-red-500 to-pink-500 rounded-full mr-3"></div>
+              💸 Wasted Spend Campaigns
+            </h3>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -387,9 +433,12 @@ export function PPCView() {
         </Card>
 
         {/* Keep ACoS Trend graph as is */}
-        <Card>
-          <CardHeader>
-            <h3 className="text-lg font-semibold">ACoS Trend</h3>
+        <Card className="overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+              <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full mr-3"></div>
+              ACoS Trend
+            </h3>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -405,9 +454,12 @@ export function PPCView() {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <h3 className="text-lg font-semibold">PPC Performance Analysis</h3>
+      <Card className="overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-purple-50 to-violet-50 border-b border-gray-100">
+          <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+            <div className="w-2 h-2 bg-gradient-to-r from-purple-500 to-violet-500 rounded-full mr-3"></div>
+            PPC Performance Analysis
+          </h3>
         </CardHeader>
         <CardContent>
           {/* Filters */}
