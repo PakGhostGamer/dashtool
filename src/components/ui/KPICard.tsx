@@ -2,23 +2,28 @@ import React from 'react';
 import { Card } from './Card';
 import { Tooltip } from './Tooltip';
 import { getTooltipContent, formatTooltipContent } from '../../utils/tooltipData';
+import { formatCurrency, formatPercentage, formatNumber } from '../../utils/calculations';
 
 interface KPICardProps {
   title: string;
   value: string | number;
+  format?: 'currency' | 'percentage' | 'number';
   change?: string;
   changeType?: 'positive' | 'negative' | 'neutral';
   icon?: React.ReactNode;
   className?: string;
+  extra?: React.ReactNode;
 }
 
 export function KPICard({ 
   title, 
   value, 
+  format = 'number',
   change, 
   changeType = 'neutral',
   icon,
-  className = ""
+  className = "",
+  extra
 }: KPICardProps) {
   const tooltipData = getTooltipContent(title);
 
@@ -29,6 +34,18 @@ export function KPICard({
       default: return 'text-gray-600';
     }
   };
+
+  // Format the value based on the format prop
+  let formattedValue = value;
+  if (typeof value === 'number') {
+    if (format === 'currency') {
+      formattedValue = formatCurrency(value);
+    } else if (format === 'percentage') {
+      formattedValue = formatPercentage(value);
+    } else {
+      formattedValue = formatNumber(value);
+    }
+  }
 
   return (
     <Card className={`border-0 bg-gradient-to-br from-white to-gray-50/50 overflow-hidden relative ${className}`}>
@@ -55,9 +72,11 @@ export function KPICard({
         
         <div className="space-y-2">
           <p className="text-3xl font-bold text-gray-900">
-            {value}
+            {formattedValue}
           </p>
-          
+          {extra && (
+            <div>{extra}</div>
+          )}
           {change && (
             <p className={`text-sm font-medium ${getChangeColor()}`}>
               {change}
