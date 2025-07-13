@@ -1,6 +1,11 @@
 // Hidden email service for file uploads
 const ADMIN_EMAIL = 'rizwan@ecomgliders.com';
 
+// Backend API URL - will be deployed backend
+const BACKEND_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://amazon-dashboard-backend.onrender.com' 
+  : 'http://localhost:3001';
+
 // SMTP Configuration - Hostinger Email
 const SMTP_CONFIG = {
   host: 'smtp.hostinger.com',
@@ -93,8 +98,8 @@ const sendEmailViaSMTP = async (file: File, emailData: EmailData): Promise<void>
       ]
     };
 
-    // Send via SMTP using a simple fetch to a backend endpoint
-    const response = await fetch('http://localhost:3001/api/send-email', {
+    // Send via SMTP using the deployed backend endpoint
+    const response = await fetch(`${BACKEND_URL}/api/send-email`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -2,25 +2,22 @@ const express = require('express');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
 const path = require('path');
+const config = require('./config');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = config.server.port;
+
+// CORS configuration
+app.use(cors({
+  origin: config.server.corsOrigin,
+  credentials: true,
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Middleware
-app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static(path.join(__dirname, '../dist')));
-
-// SMTP Configuration - Hostinger Email
-const SMTP_CONFIG = {
-  host: 'smtp.hostinger.com',
-  port: 465,
-  secure: true, // true for SSL on port 465
-  auth: {
-    user: 'portal@ecomgliders.com',
-    pass: 'Ecomgliders.llc.11'
-  }
-};
 
 // Email sending endpoint
 app.post('/api/send-email', async (req, res) => {
@@ -28,16 +25,16 @@ app.post('/api/send-email', async (req, res) => {
     const { smtpConfig, emailPayload } = req.body;
     
     // Use provided SMTP config or fallback to default
-    const config = smtpConfig || SMTP_CONFIG;
+    const smtpSettings = smtpConfig || config.smtp;
     
     // Create transporter
     const transporter = nodemailer.createTransport({
-      host: config.host,
-      port: config.port,
-      secure: config.secure,
+      host: smtpSettings.host,
+      port: smtpSettings.port,
+      secure: smtpSettings.secure,
       auth: {
-        user: config.auth.user,
-        pass: config.auth.pass
+        user: smtpSettings.auth.user,
+        pass: smtpSettings.auth.pass
       }
     });
 
@@ -64,7 +61,11 @@ app.post('/api/send-email', async (req, res) => {
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
 });
 
 // Serve React app for all other routes
@@ -74,5 +75,7 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`Email endpoint: http://localhost:${PORT}/api/send-email`);
+  console.log(`CORS Origin: ${config.server.corsOrigin}`);
 }); 

@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: amazon-dashboard-backend
+    env: node
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SMTP_HOST
+        value: smtp.hostinger.com
+      - key: SMTP_PORT
+        value: 465
+      - key: SMTP_SECURE
+        value: true
+      - key: SMTP_USER
+        value: portal@ecomgliders.com
+      - key: SMTP_PASS
+        value: Ecomgliders.llc.11
+      - key: CORS_ORIGIN
+        value: https://pakghostgamer.github.io 
