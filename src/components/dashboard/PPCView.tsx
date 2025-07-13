@@ -440,6 +440,7 @@ export function PPCView() {
                     { key: 'avgBid', label: 'Avg Bid', type: 'currency' }
                   ]}
                   maxRows={20}
+                  showFilters={false}
                 />
               </CardContent>
             </Card>
@@ -460,6 +461,7 @@ export function PPCView() {
                     { key: 'avgBid', label: 'Avg Bid', type: 'currency' }
                   ]}
                   maxRows={20}
+                  showFilters={false}
                 />
               </CardContent>
             </Card>
@@ -483,6 +485,7 @@ export function PPCView() {
                     { key: 'avgBid', label: 'Avg Bid', type: 'currency' }
                   ]}
                   maxRows={20}
+                  showFilters={false}
                 />
               </CardContent>
             </Card>
@@ -503,6 +506,7 @@ export function PPCView() {
                     { key: 'avgBid', label: 'Avg Bid', type: 'currency' }
                   ]}
                   maxRows={20}
+                  showFilters={false}
                 />
               </CardContent>
             </Card>
@@ -526,6 +530,7 @@ export function PPCView() {
                     { key: 'avgBid', label: 'Avg Bid', type: 'currency' }
                   ]}
                   maxRows={20}
+                  showFilters={false}
                 />
               </CardContent>
             </Card>
@@ -546,6 +551,7 @@ export function PPCView() {
                     { key: 'avgBid', label: 'Avg Bid', type: 'currency' }
                   ]}
                   maxRows={20}
+                  showFilters={false}
                 />
               </CardContent>
             </Card>

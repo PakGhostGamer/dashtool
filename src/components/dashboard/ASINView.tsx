@@ -485,6 +485,7 @@ export function ASINView() {
               { key: 'acos', label: 'ACoS (%)', type: 'percentage' }
             ]}
             maxRows={50}
+            showFilters={false}
           />
         </CardContent>
       </Card>

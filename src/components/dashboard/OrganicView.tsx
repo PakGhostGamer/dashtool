@@ -214,6 +214,7 @@ export function OrganicView() {
               { key: 'cvr', label: 'CVR (%)', type: 'percentage' }
             ]}
             maxRows={20}
+            showFilters={false}
           />
         </CardContent>
       </Card>

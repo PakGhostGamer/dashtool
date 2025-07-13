@@ -394,6 +394,7 @@ export function OverallView() {
               { key: 'spendPercentage', label: 'Spend %', type: 'percentage' }
             ]}
             maxRows={20}
+            showFilters={false}
           />
         </CardContent>
       </Card>
@@ -562,6 +563,7 @@ export function OverallView() {
               { key: 'conversionRate', label: 'Conversion Rate (%)', type: 'percentage' }
             ]}
             maxRows={100}
+            showFilters={false}
           />
         </CardContent>
       </Card>

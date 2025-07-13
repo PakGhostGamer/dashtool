@@ -17,6 +17,7 @@ interface FilterableTableProps {
   maxRows?: number;
   className?: string;
   onRowClick?: (row: any) => void;
+  showFilters?: boolean;
 }
 
 export function FilterableTable({ 
@@ -25,7 +26,8 @@ export function FilterableTable({
   title, 
   maxRows = 50, 
   className = "",
-  onRowClick 
+  onRowClick,
+  showFilters = false
 }: FilterableTableProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
@@ -134,78 +136,84 @@ export function FilterableTable({
           <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
         )}
         
-        <div className="flex flex-col sm:flex-row gap-2">
-          {/* Global search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Search all columns..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
+        {showFilters && (
+          <div className="flex flex-col sm:flex-row gap-2">
+            {/* Global search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search all columns..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
 
-          {/* Clear filters button */}
-          {(searchTerm || Object.values(filters).some(Boolean)) && (
-            <button
-              onClick={clearAllFilters}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50"
-            >
-              <X className="w-4 h-4" />
-              Clear Filters
-            </button>
-          )}
-        </div>
+            {/* Clear filters button */}
+            {(searchTerm || Object.values(filters).some(Boolean)) && (
+              <button
+                onClick={clearAllFilters}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                <X className="w-4 h-4" />
+                Clear Filters
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Column filters */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
-        {columns
-          .filter(col => col.filterable !== false)
-          .map(column => (
-            <div key={column.key} className="space-y-1">
-              <label className="block text-xs font-medium text-gray-600">
-                {column.label}
-              </label>
-              {column.type === 'number' ? (
-                <select
-                  value={filters[column.key] || ''}
-                  onChange={(e) => setFilters(prev => ({
-                    ...prev,
-                    [column.key]: e.target.value
-                  }))}
-                  className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">All</option>
-                  {getUniqueValues(column.key).map(value => (
-                    <option key={value} value={value}>
-                      {formatCellValue(value, column.type)}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  type="text"
-                  placeholder={`Filter ${column.label}...`}
-                  value={filters[column.key] || ''}
-                  onChange={(e) => setFilters(prev => ({
-                    ...prev,
-                    [column.key]: e.target.value
-                  }))}
-                  className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                />
-              )}
-            </div>
-          ))}
-      </div>
+      {showFilters && (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+          {columns
+            .filter(col => col.filterable !== false)
+            .map(column => (
+              <div key={column.key} className="space-y-1">
+                <label className="block text-xs font-medium text-gray-600">
+                  {column.label}
+                </label>
+                {column.type === 'number' ? (
+                  <select
+                    value={filters[column.key] || ''}
+                    onChange={(e) => setFilters(prev => ({
+                      ...prev,
+                      [column.key]: e.target.value
+                    }))}
+                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">All</option>
+                    {getUniqueValues(column.key).map(value => (
+                      <option key={value} value={value}>
+                        {formatCellValue(value, column.type)}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    placeholder={`Filter ${column.label}...`}
+                    value={filters[column.key] || ''}
+                    onChange={(e) => setFilters(prev => ({
+                      ...prev,
+                      [column.key]: e.target.value
+                    }))}
+                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                )}
+              </div>
+            ))}
+        </div>
+      )}
 
       {/* Results summary */}
-      <div className="text-sm text-gray-600">
-        Showing {sortedData.length} of {data.length} records
-        {searchTerm && ` (filtered by "${searchTerm}")`}
-      </div>
+      {showFilters && (
+        <div className="text-sm text-gray-600">
+          Showing {sortedData.length} of {data.length} records
+          {searchTerm && ` (filtered by "${searchTerm}")`}
+        </div>
+      )}
 
       {/* Table */}
       <div className="overflow-x-auto border border-gray-200 rounded-lg">

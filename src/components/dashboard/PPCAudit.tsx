@@ -285,6 +285,7 @@ export function PPCAudit() {
               { key: 'status', label: 'Status', type: 'text' }
             ]}
             maxRows={50}
+            showFilters={true}
           />
         </CardContent>
       </Card>
