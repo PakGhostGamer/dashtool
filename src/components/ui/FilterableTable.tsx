@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, X } from 'lucide-react';
 
 interface Column {
   key: string;
@@ -119,98 +118,35 @@ export function FilterableTable({
     }
 
     // Add color coding for specific columns
-    if (type === 'percentage' && columnKey) {
+    if (type === 'percentage' && columnKey === 'acos') {
       const numValue = Number(value);
-      if (columnKey === 'acos') {
-        // ACoS: Red for high (>25%), Orange for medium (15-25%), Green for low (<15%)
-        if (numValue > 25) {
-          return (
-            <div className="flex items-center gap-2">
-              <span className="text-red-600 font-semibold">{formattedValue}</span>
-              <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
-                🔥 High
-              </span>
-            </div>
-          );
-        } else if (numValue > 15) {
-          return (
-            <div className="flex items-center gap-2">
-              <span className="text-orange-600 font-semibold">{formattedValue}</span>
-              <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-orange-100 text-orange-800 rounded-full">
-                ⚠️ Medium
-              </span>
-            </div>
-          );
-        } else {
-          return (
-            <div className="flex items-center gap-2">
-              <span className="text-green-600 font-semibold">{formattedValue}</span>
-              <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
-                ✅ Good
-              </span>
-            </div>
-          );
-        }
-      } else if (columnKey === 'cvr') {
-        // CVR: Green for high (>5%), Orange for medium (2-5%), Red for low (<2%)
-        if (numValue > 5) {
-          return (
-            <div className="flex items-center gap-2">
-              <span className="text-green-600 font-semibold">{formattedValue}</span>
-              <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
-                🎯 High
-              </span>
-            </div>
-          );
-        } else if (numValue > 2) {
-          return (
-            <div className="flex items-center gap-2">
-              <span className="text-orange-600 font-semibold">{formattedValue}</span>
-              <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-orange-100 text-orange-800 rounded-full">
-                📊 Medium
-              </span>
-            </div>
-          );
-        } else {
-          return (
-            <div className="flex items-center gap-2">
-              <span className="text-red-600 font-semibold">{formattedValue}</span>
-              <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
-                📉 Low
-              </span>
-            </div>
-          );
-        }
-      } else if (columnKey === 'ctr') {
-        // CTR: Green for high (>1%), Orange for medium (0.5-1%), Red for low (<0.5%)
-        if (numValue > 1) {
-          return (
-            <div className="flex items-center gap-2">
-              <span className="text-green-600 font-semibold">{formattedValue}</span>
-              <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
-                👁️ High
-              </span>
-            </div>
-          );
-        } else if (numValue > 0.5) {
-          return (
-            <div className="flex items-center gap-2">
-              <span className="text-orange-600 font-semibold">{formattedValue}</span>
-              <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-orange-100 text-orange-800 rounded-full">
-                👀 Medium
-              </span>
-            </div>
-          );
-        } else {
-          return (
-            <div className="flex items-center gap-2">
-              <span className="text-red-600 font-semibold">{formattedValue}</span>
-              <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
-                🙈 Low
-              </span>
-            </div>
-          );
-        }
+      if (numValue > 25) {
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-red-600 font-semibold">{formattedValue}</span>
+            <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
+              High
+            </span>
+          </div>
+        );
+      } else if (numValue > 15) {
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-orange-600 font-semibold">{formattedValue}</span>
+            <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-orange-100 text-orange-800 rounded-full">
+              Medium
+            </span>
+          </div>
+        );
+      } else {
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-green-600 font-semibold">{formattedValue}</span>
+            <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
+              Good
+            </span>
+          </div>
+        );
       }
     } else if (type === 'number' && columnKey === 'roas') {
       // ROAS: Green for high (>4), Orange for medium (2-4), Red for low (<2)
@@ -220,7 +156,7 @@ export function FilterableTable({
           <div className="flex items-center gap-2">
             <span className="text-green-600 font-semibold">{formattedValue}</span>
             <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
-              💰 Excellent
+              Excellent
             </span>
           </div>
         );
@@ -229,7 +165,7 @@ export function FilterableTable({
           <div className="flex items-center gap-2">
             <span className="text-orange-600 font-semibold">{formattedValue}</span>
             <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-orange-100 text-orange-800 rounded-full">
-              📈 Good
+              Good
             </span>
           </div>
         );
@@ -238,7 +174,7 @@ export function FilterableTable({
           <div className="flex items-center gap-2">
             <span className="text-red-600 font-semibold">{formattedValue}</span>
             <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
-              📉 Poor
+              Poor
             </span>
           </div>
         );
@@ -251,7 +187,7 @@ export function FilterableTable({
           <div className="flex items-center gap-2">
             <span className="text-green-600 font-semibold">{formattedValue}</span>
             <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
-              💵 Sales
+              Sales
             </span>
           </div>
         );
@@ -264,7 +200,7 @@ export function FilterableTable({
           <div className="flex items-center gap-2">
             <span className="text-red-600 font-semibold">{formattedValue}</span>
             <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
-              💸 High Spend
+              High Spend
             </span>
           </div>
         );
@@ -275,19 +211,19 @@ export function FilterableTable({
       if (status === 'wasted') {
         return (
           <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
-            💸 Wasted
+            Wasted
           </span>
         );
       } else if (status === 'high acos') {
         return (
           <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-orange-100 text-orange-800 rounded-full">
-            🔥 High ACoS
+            High ACoS
           </span>
         );
       } else if (status === 'good') {
         return (
           <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
-            ✅ Good
+            Good
           </span>
         );
       }
@@ -322,13 +258,12 @@ export function FilterableTable({
           <div className="flex flex-col sm:flex-row gap-3">
             {/* Global search */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
                 placeholder="Search all columns..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-colors"
+                className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-colors"
               />
             </div>
 
@@ -338,7 +273,6 @@ export function FilterableTable({
                 onClick={clearAllFilters}
                 className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:text-red-800 border border-red-300 rounded-lg hover:bg-red-50 transition-colors shadow-sm"
               >
-                <X className="w-4 h-4" />
                 Clear Filters
               </button>
             )}
@@ -349,8 +283,7 @@ export function FilterableTable({
       {/* Column filters */}
       {showFilters && (
         <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg shadow-sm">
-          <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-            <Filter className="w-5 h-5 mr-2 text-blue-600" />
+          <h4 className="text-lg font-semibold text-gray-800 mb-4">
             Advanced Filters
           </h4>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
@@ -472,7 +405,6 @@ export function FilterableTable({
       {/* No results */}
       {sortedData.length === 0 && (
         <div className="text-center py-8 text-gray-500">
-          <Filter className="w-8 h-8 mx-auto mb-2 text-gray-400" />
           <p>No results found. Try adjusting your filters.</p>
         </div>
       )}
