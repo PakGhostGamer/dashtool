@@ -264,29 +264,36 @@ export function PPCAudit() {
       </div>
 
       <Card>
+        <CardHeader>
+          <h3 className="text-lg font-semibold">Search Term Analysis</h3>
+        </CardHeader>
         <CardContent>
-          <FilterableTable
-            title="Search Term Analysis"
-            data={searchTermAnalysis.map(term => {
-              let status = '';
-              if (term.sales === 0) status = 'Wasted';
-              else if (term.acos > acosThreshold) status = 'High ACoS';
-              else status = 'Good';
-              return { ...term, status };
-            })}
-            columns={[
-              { key: 'searchTerm', label: 'Search Term', type: 'text' },
-              { key: 'campaign', label: 'Campaign', type: 'text' },
-              { key: 'spend', label: 'Spend', type: 'currency' },
-              { key: 'sales', label: 'Sales', type: 'currency' },
-              { key: 'acos', label: 'ACoS', type: 'percentage' },
-              { key: 'ctr', label: 'CTR', type: 'percentage' },
-              { key: 'cvr', label: 'CVR', type: 'percentage' },
-              { key: 'status', label: 'Status', type: 'text' }
-            ]}
-            maxRows={50}
-            showFilters={true}
-          />
+          {searchTermAnalysis.length === 0 ? (
+            <div className="text-gray-500 py-8 text-center">No Search Term Report data uploaded yet.</div>
+          ) : (
+            <FilterableTable
+              title=""
+              data={searchTermAnalysis.map(term => {
+                let status = '';
+                if (term.sales === 0) status = 'Wasted';
+                else if (term.acos > acosThreshold) status = 'High ACoS';
+                else status = 'Good';
+                return { ...term, status };
+              })}
+              columns={[
+                { key: 'searchTerm', label: 'Search Term', type: 'text' },
+                { key: 'campaign', label: 'Campaign', type: 'text' },
+                { key: 'spend', label: 'Spend', type: 'currency' },
+                { key: 'sales', label: 'Sales', type: 'currency' },
+                { key: 'acos', label: 'ACoS', type: 'percentage' },
+                { key: 'ctr', label: 'CTR', type: 'percentage' },
+                { key: 'cvr', label: 'CVR', type: 'percentage' },
+                { key: 'status', label: 'Status', type: 'text' }
+              ]}
+              maxRows={50}
+              showFilters={true}
+            />
+          )}
         </CardContent>
       </Card>
     </div>

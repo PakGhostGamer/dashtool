@@ -426,9 +426,12 @@ export function PPCView() {
           <div className="grid lg:grid-cols-2 gap-6 mb-8">
             {/* High Performing Campaigns */}
             <Card>
+              <CardHeader>
+                <h4 className="text-md font-semibold text-green-700">🏆 High Performing Campaigns</h4>
+              </CardHeader>
               <CardContent>
                 <FilterableTable
-                  title="🏆 High Performing Campaigns"
+                  title=""
                   data={highPerformingCampaigns}
                   columns={[
                     { key: 'campaign', label: 'Campaign', type: 'text' },
@@ -447,9 +450,12 @@ export function PPCView() {
 
             {/* Low Performing Campaigns */}
             <Card>
+              <CardHeader>
+                <h4 className="text-md font-semibold text-red-700">⚠️ Low Performing Campaigns</h4>
+              </CardHeader>
               <CardContent>
                 <FilterableTable
-                  title="⚠️ Low Performing Campaigns"
+                  title=""
                   data={lowPerformingCampaigns}
                   columns={[
                     { key: 'campaign', label: 'Campaign', type: 'text' },
@@ -471,9 +477,12 @@ export function PPCView() {
           <div className="grid lg:grid-cols-2 gap-6 mb-8">
             {/* High ACoS Campaigns */}
             <Card>
+              <CardHeader>
+                <h4 className="text-md font-semibold text-orange-700">🔥 High ACoS Campaigns</h4>
+              </CardHeader>
               <CardContent>
                 <FilterableTable
-                  title="🔥 High ACoS Campaigns"
+                  title=""
                   data={highAcosCampaigns}
                   columns={[
                     { key: 'campaign', label: 'Campaign', type: 'text' },
@@ -492,9 +501,12 @@ export function PPCView() {
 
             {/* Low ACoS Campaigns */}
             <Card>
+              <CardHeader>
+                <h4 className="text-md font-semibold text-blue-700">💎 Low ACoS Campaigns</h4>
+              </CardHeader>
               <CardContent>
                 <FilterableTable
-                  title="💎 Low ACoS Campaigns"
+                  title=""
                   data={lowAcosCampaigns}
                   columns={[
                     { key: 'campaign', label: 'Campaign', type: 'text' },
@@ -516,9 +528,12 @@ export function PPCView() {
           <div className="grid lg:grid-cols-2 gap-6">
             {/* High Performing Search Terms */}
             <Card>
+              <CardHeader>
+                <h4 className="text-md font-semibold text-green-700">🎯 High Performing Search Terms</h4>
+              </CardHeader>
               <CardContent>
                 <FilterableTable
-                  title="🎯 High Performing Search Terms"
+                  title=""
                   data={highPerformingSearchTerms}
                   columns={[
                     { key: 'searchTerm', label: 'Search Term', type: 'text' },
@@ -537,9 +552,12 @@ export function PPCView() {
 
             {/* Low Performing Search Terms */}
             <Card>
+              <CardHeader>
+                <h4 className="text-md font-semibold text-red-700">📉 Low Performing Search Terms</h4>
+              </CardHeader>
               <CardContent>
                 <FilterableTable
-                  title="📉 Low Performing Search Terms"
+                  title=""
                   data={lowPerformingSearchTerms}
                   columns={[
                     { key: 'searchTerm', label: 'Search Term', type: 'text' },

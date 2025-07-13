@@ -216,14 +216,14 @@ export function FilterableTable({
       )}
 
       {/* Table */}
-      <div className="overflow-x-auto border border-gray-200 rounded-lg">
+      <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50">
-            <tr>
+          <thead>
+            <tr className="border-b">
               {columns.map(column => (
                 <th
                   key={column.key}
-                  className={`text-left py-3 px-4 font-medium text-gray-700 ${
+                  className={`text-left py-2 px-4 font-medium ${
                     column.sortable !== false ? 'cursor-pointer hover:bg-gray-100' : ''
                   } ${column.width || ''}`}
                   onClick={() => column.sortable !== false && handleSort(column.key)}
@@ -240,11 +240,11 @@ export function FilterableTable({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody>
             {sortedData.slice(0, maxRows).map((row, index) => (
               <tr
                 key={index}
-                className={`hover:bg-gray-50 ${
+                className={`border-b hover:bg-gray-50 ${
                   onRowClick ? 'cursor-pointer' : ''
                 }`}
                 onClick={() => onRowClick && onRowClick(row)}
@@ -252,7 +252,7 @@ export function FilterableTable({
                 {columns.map(column => (
                   <td
                     key={column.key}
-                    className="py-3 px-4 text-gray-900"
+                    className="py-2 px-4"
                   >
                     {formatCellValue(row[column.key], column.type)}
                   </td>

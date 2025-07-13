@@ -201,21 +201,28 @@ export function OrganicView() {
       </Card>
 
       <Card className="mt-8">
+        <CardHeader>
+          <h3 className="text-lg font-semibold">Top Organic Products</h3>
+        </CardHeader>
         <CardContent>
-          <FilterableTable
-            title="Top Organic Products"
-            data={topOrganicProducts}
-            columns={[
-              { key: 'asin', label: 'SKU', type: 'text' },
-              { key: 'productName', label: 'Product Name', type: 'text' },
-              { key: 'organicSales', label: 'Organic Sales', type: 'currency' },
-              { key: 'unitsSold', label: 'Units Sold', type: 'number' },
-              { key: 'sessions', label: 'Sessions', type: 'number' },
-              { key: 'cvr', label: 'CVR (%)', type: 'percentage' }
-            ]}
-            maxRows={20}
-            showFilters={false}
-          />
+          {topOrganicProducts.length === 0 ? (
+            <div className="text-gray-500 py-8 text-center">No Business Report data uploaded yet.</div>
+          ) : (
+            <FilterableTable
+              title=""
+              data={topOrganicProducts}
+              columns={[
+                { key: 'asin', label: 'SKU', type: 'text' },
+                { key: 'productName', label: 'Product Name', type: 'text' },
+                { key: 'organicSales', label: 'Organic Sales', type: 'currency' },
+                { key: 'unitsSold', label: 'Units Sold', type: 'number' },
+                { key: 'sessions', label: 'Sessions', type: 'number' },
+                { key: 'cvr', label: 'CVR (%)', type: 'percentage' }
+              ]}
+              maxRows={20}
+              showFilters={false}
+            />
+          )}
         </CardContent>
       </Card>
     </div>

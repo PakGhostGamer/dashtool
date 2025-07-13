@@ -375,27 +375,40 @@ export function OverallView() {
 
       {/* Match Type Performance Analysis */}
       <Card className="mt-8">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Match Type Performance Analysis</h3>
+            <div className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">
+              <span className="w-2 h-2 bg-blue-500 rounded-full mr-1"></span>
+              NEW
+            </div>
+          </div>
+        </CardHeader>
         <CardContent>
-          <FilterableTable
-            title="Match Type Performance Analysis"
-            data={matchTypeArray}
-            columns={[
-              { key: 'matchType', label: 'Match Type', type: 'text' },
-              { key: 'spend', label: 'Spend', type: 'currency' },
-              { key: 'sales', label: 'Sales', type: 'currency' },
-              { key: 'orders', label: 'Orders', type: 'number' },
-              { key: 'impressions', label: 'Impressions', type: 'number' },
-              { key: 'clicks', label: 'Clicks', type: 'number' },
-              { key: 'acos', label: 'ACoS', type: 'percentage' },
-              { key: 'roas', label: 'ROAS', type: 'number' },
-              { key: 'ctr', label: 'CTR', type: 'percentage' },
-              { key: 'cvr', label: 'CVR', type: 'percentage' },
-              { key: 'salesPercentage', label: 'Sales %', type: 'percentage' },
-              { key: 'spendPercentage', label: 'Spend %', type: 'percentage' }
-            ]}
-            maxRows={20}
-            showFilters={false}
-          />
+          {matchTypeArray.length === 0 ? (
+            <div className="text-gray-500 py-8 text-center">No Search Term Report data uploaded yet.</div>
+          ) : (
+            <FilterableTable
+              title=""
+              data={matchTypeArray}
+              columns={[
+                { key: 'matchType', label: 'Match Type', type: 'text' },
+                { key: 'spend', label: 'Spend', type: 'currency' },
+                { key: 'sales', label: 'Sales', type: 'currency' },
+                { key: 'orders', label: 'Orders', type: 'number' },
+                { key: 'impressions', label: 'Impressions', type: 'number' },
+                { key: 'clicks', label: 'Clicks', type: 'number' },
+                { key: 'acos', label: 'ACoS', type: 'percentage' },
+                { key: 'roas', label: 'ROAS', type: 'number' },
+                { key: 'ctr', label: 'CTR', type: 'percentage' },
+                { key: 'cvr', label: 'CVR', type: 'percentage' },
+                { key: 'salesPercentage', label: 'Sales %', type: 'percentage' },
+                { key: 'spendPercentage', label: 'Spend %', type: 'percentage' }
+              ]}
+              maxRows={20}
+              showFilters={false}
+            />
+          )}
         </CardContent>
       </Card>
 
@@ -551,20 +564,27 @@ export function OverallView() {
 
       {/* Detailed BR Data Table */}
       <Card className="mt-8">
+        <CardHeader>
+          <h3 className="text-lg font-semibold">Business Report Data (Detailed)</h3>
+        </CardHeader>
         <CardContent>
-          <FilterableTable
-            title="Business Report Data (Detailed)"
-            data={state.businessReports}
-            columns={[
-              { key: 'sku', label: 'SKU', type: 'text' },
-              { key: 'sessions', label: 'Sessions', type: 'number' },
-              { key: 'unitsOrdered', label: 'Units Ordered', type: 'number' },
-              { key: 'sales', label: 'Sales', type: 'currency' },
-              { key: 'conversionRate', label: 'Conversion Rate (%)', type: 'percentage' }
-            ]}
-            maxRows={100}
-            showFilters={false}
-          />
+          {state.businessReports.length === 0 ? (
+            <div className="text-gray-500 py-8 text-center">No Business Report data uploaded yet.</div>
+          ) : (
+            <FilterableTable
+              title=""
+              data={state.businessReports}
+              columns={[
+                { key: 'sku', label: 'SKU', type: 'text' },
+                { key: 'sessions', label: 'Sessions', type: 'number' },
+                { key: 'unitsOrdered', label: 'Units Ordered', type: 'number' },
+                { key: 'sales', label: 'Sales', type: 'currency' },
+                { key: 'conversionRate', label: 'Conversion Rate (%)', type: 'percentage' }
+              ]}
+              maxRows={100}
+              showFilters={false}
+            />
+          )}
         </CardContent>
       </Card>
 

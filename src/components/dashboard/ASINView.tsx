@@ -440,53 +440,60 @@ export function ASINView() {
 
       {/* All ASINs Performance Table */}
       <Card>
+        <CardHeader>
+          <h3 className="text-lg font-semibold">All ASINs Performance Summary</h3>
+        </CardHeader>
         <CardContent>
-          <FilterableTable
-            title="All ASINs Performance Summary"
-            data={uniqueSKUs.map(sku => {
-              const asinData = state.businessReports.filter(br => br.sku === sku);
-              const totalSales = asinData.reduce((sum, br) => sum + br.sales, 0);
-              const totalUnits = asinData.reduce((sum, br) => sum + br.unitsOrdered, 0);
-              const totalSessions = asinData.reduce((sum, br) => sum + br.sessions, 0);
-              const avgSalePrice = totalUnits > 0 ? totalSales / totalUnits : 0;
-              const conversionRate = totalSessions > 0 ? (totalUnits / totalSessions) * 100 : 0;
-              
-              // Estimate PPC data proportionally
-              const ppcData = state.searchTermReports.filter(str => 
-                asinData.some(br => br.date === str.date)
-              );
-              const ppcSales = ppcData.reduce((sum, str) => sum + str.sales, 0);
-              const ppcSpend = ppcData.reduce((sum, str) => sum + str.spend, 0);
-              const acos = ppcSales > 0 ? (ppcSpend / ppcSales) * 100 : 0;
-              
-              return {
-                sku,
-                totalSales,
-                totalUnits,
-                totalSessions,
-                avgSalePrice,
-                conversionRate,
-                ppcSales,
-                ppcSpend,
-                acos,
-                organicSales: totalSales - ppcSales
-              };
-            })}
-            columns={[
-              { key: 'sku', label: 'SKU', type: 'text' },
-              { key: 'totalSales', label: 'Total Sales', type: 'currency' },
-              { key: 'totalUnits', label: 'Units Sold', type: 'number' },
-              { key: 'totalSessions', label: 'Sessions', type: 'number' },
-              { key: 'avgSalePrice', label: 'Avg Sale Price', type: 'currency' },
-              { key: 'conversionRate', label: 'CVR (%)', type: 'percentage' },
-              { key: 'ppcSales', label: 'PPC Sales', type: 'currency' },
-              { key: 'organicSales', label: 'Organic Sales', type: 'currency' },
-              { key: 'ppcSpend', label: 'PPC Spend', type: 'currency' },
-              { key: 'acos', label: 'ACoS (%)', type: 'percentage' }
-            ]}
-            maxRows={50}
-            showFilters={false}
-          />
+          {uniqueSKUs.length === 0 ? (
+            <div className="text-gray-500 py-8 text-center">No Business Report data uploaded yet.</div>
+          ) : (
+            <FilterableTable
+              title=""
+              data={uniqueSKUs.map(sku => {
+                const asinData = state.businessReports.filter(br => br.sku === sku);
+                const totalSales = asinData.reduce((sum, br) => sum + br.sales, 0);
+                const totalUnits = asinData.reduce((sum, br) => sum + br.unitsOrdered, 0);
+                const totalSessions = asinData.reduce((sum, br) => sum + br.sessions, 0);
+                const avgSalePrice = totalUnits > 0 ? totalSales / totalUnits : 0;
+                const conversionRate = totalSessions > 0 ? (totalUnits / totalSessions) * 100 : 0;
+                
+                // Estimate PPC data proportionally
+                const ppcData = state.searchTermReports.filter(str => 
+                  asinData.some(br => br.date === str.date)
+                );
+                const ppcSales = ppcData.reduce((sum, str) => sum + str.sales, 0);
+                const ppcSpend = ppcData.reduce((sum, str) => sum + str.spend, 0);
+                const acos = ppcSales > 0 ? (ppcSpend / ppcSales) * 100 : 0;
+                
+                return {
+                  sku,
+                  totalSales,
+                  totalUnits,
+                  totalSessions,
+                  avgSalePrice,
+                  conversionRate,
+                  ppcSales,
+                  ppcSpend,
+                  acos,
+                  organicSales: totalSales - ppcSales
+                };
+              })}
+              columns={[
+                { key: 'sku', label: 'SKU', type: 'text' },
+                { key: 'totalSales', label: 'Total Sales', type: 'currency' },
+                { key: 'totalUnits', label: 'Units Sold', type: 'number' },
+                { key: 'totalSessions', label: 'Sessions', type: 'number' },
+                { key: 'avgSalePrice', label: 'Avg Sale Price', type: 'currency' },
+                { key: 'conversionRate', label: 'CVR (%)', type: 'percentage' },
+                { key: 'ppcSales', label: 'PPC Sales', type: 'currency' },
+                { key: 'organicSales', label: 'Organic Sales', type: 'currency' },
+                { key: 'ppcSpend', label: 'PPC Spend', type: 'currency' },
+                { key: 'acos', label: 'ACoS (%)', type: 'percentage' }
+              ]}
+              maxRows={50}
+              showFilters={false}
+            />
+          )}
         </CardContent>
       </Card>
     </div>
