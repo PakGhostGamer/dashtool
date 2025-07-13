@@ -6,8 +6,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Build outputs
-dist/
+# Build outputs 
 build/
 *.tsbuildinfo
 
@@ -87,8 +86,6 @@ jspm_packages/
 
 # Gatsby files
 .cache/
-public
-
 # Storybook build outputs
 .out
 .storybook-out
@@ -96,12 +93,6 @@ public
 # Temporary folders
 tmp/
 temp/
-
-# Firebase
-.firebase/
-
-# Bolt
-.bolt/
 
 # Email test files
 test-email.js
