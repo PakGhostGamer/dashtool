@@ -93,25 +93,207 @@ export function FilterableTable({
     }
   };
 
-  // Format cell value
-  const formatCellValue = (value: any, type?: string) => {
+  // Format cell value with color coding
+  const formatCellValue = (value: any, type?: string, columnKey?: string) => {
     if (value === null || value === undefined) return '-';
     
+    let formattedValue = '';
     switch (type) {
       case 'currency':
-        return new Intl.NumberFormat('en-US', {
+        formattedValue = new Intl.NumberFormat('en-US', {
           style: 'currency',
           currency: 'USD'
         }).format(Number(value));
+        break;
       case 'percentage':
-        return `${Number(value).toFixed(2)}%`;
+        formattedValue = `${Number(value).toFixed(2)}%`;
+        break;
       case 'number':
-        return new Intl.NumberFormat('en-US').format(Number(value));
+        formattedValue = new Intl.NumberFormat('en-US').format(Number(value));
+        break;
       case 'date':
-        return new Date(value).toLocaleDateString();
+        formattedValue = new Date(value).toLocaleDateString();
+        break;
       default:
-        return String(value);
+        formattedValue = String(value);
     }
+
+    // Add color coding for specific columns
+    if (type === 'percentage' && columnKey) {
+      const numValue = Number(value);
+      if (columnKey === 'acos') {
+        // ACoS: Red for high (>25%), Orange for medium (15-25%), Green for low (<15%)
+        if (numValue > 25) {
+          return (
+            <div className="flex items-center gap-2">
+              <span className="text-red-600 font-semibold">{formattedValue}</span>
+              <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
+                🔥 High
+              </span>
+            </div>
+          );
+        } else if (numValue > 15) {
+          return (
+            <div className="flex items-center gap-2">
+              <span className="text-orange-600 font-semibold">{formattedValue}</span>
+              <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-orange-100 text-orange-800 rounded-full">
+                ⚠️ Medium
+              </span>
+            </div>
+          );
+        } else {
+          return (
+            <div className="flex items-center gap-2">
+              <span className="text-green-600 font-semibold">{formattedValue}</span>
+              <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
+                ✅ Good
+              </span>
+            </div>
+          );
+        }
+      } else if (columnKey === 'cvr') {
+        // CVR: Green for high (>5%), Orange for medium (2-5%), Red for low (<2%)
+        if (numValue > 5) {
+          return (
+            <div className="flex items-center gap-2">
+              <span className="text-green-600 font-semibold">{formattedValue}</span>
+              <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
+                🎯 High
+              </span>
+            </div>
+          );
+        } else if (numValue > 2) {
+          return (
+            <div className="flex items-center gap-2">
+              <span className="text-orange-600 font-semibold">{formattedValue}</span>
+              <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-orange-100 text-orange-800 rounded-full">
+                📊 Medium
+              </span>
+            </div>
+          );
+        } else {
+          return (
+            <div className="flex items-center gap-2">
+              <span className="text-red-600 font-semibold">{formattedValue}</span>
+              <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
+                📉 Low
+              </span>
+            </div>
+          );
+        }
+      } else if (columnKey === 'ctr') {
+        // CTR: Green for high (>1%), Orange for medium (0.5-1%), Red for low (<0.5%)
+        if (numValue > 1) {
+          return (
+            <div className="flex items-center gap-2">
+              <span className="text-green-600 font-semibold">{formattedValue}</span>
+              <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
+                👁️ High
+              </span>
+            </div>
+          );
+        } else if (numValue > 0.5) {
+          return (
+            <div className="flex items-center gap-2">
+              <span className="text-orange-600 font-semibold">{formattedValue}</span>
+              <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-orange-100 text-orange-800 rounded-full">
+                👀 Medium
+              </span>
+            </div>
+          );
+        } else {
+          return (
+            <div className="flex items-center gap-2">
+              <span className="text-red-600 font-semibold">{formattedValue}</span>
+              <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
+                🙈 Low
+              </span>
+            </div>
+          );
+        }
+      }
+    } else if (type === 'number' && columnKey === 'roas') {
+      // ROAS: Green for high (>4), Orange for medium (2-4), Red for low (<2)
+      const numValue = Number(value);
+      if (numValue > 4) {
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-green-600 font-semibold">{formattedValue}</span>
+            <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
+              💰 Excellent
+            </span>
+          </div>
+        );
+      } else if (numValue > 2) {
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-orange-600 font-semibold">{formattedValue}</span>
+            <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-orange-100 text-orange-800 rounded-full">
+              📈 Good
+            </span>
+          </div>
+        );
+      } else {
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-red-600 font-semibold">{formattedValue}</span>
+            <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
+              📉 Poor
+            </span>
+          </div>
+        );
+      }
+    } else if (type === 'currency' && columnKey === 'sales') {
+      // Sales: Green for positive values
+      const numValue = Number(value);
+      if (numValue > 0) {
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-green-600 font-semibold">{formattedValue}</span>
+            <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
+              💵 Sales
+            </span>
+          </div>
+        );
+      }
+    } else if (type === 'currency' && columnKey === 'spend') {
+      // Spend: Red for high spend
+      const numValue = Number(value);
+      if (numValue > 100) {
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-red-600 font-semibold">{formattedValue}</span>
+            <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
+              💸 High Spend
+            </span>
+          </div>
+        );
+      }
+    } else if (columnKey === 'status') {
+      // Status badges
+      const status = String(value).toLowerCase();
+      if (status === 'wasted') {
+        return (
+          <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
+            💸 Wasted
+          </span>
+        );
+      } else if (status === 'high acos') {
+        return (
+          <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-orange-100 text-orange-800 rounded-full">
+            🔥 High ACoS
+          </span>
+        );
+      } else if (status === 'good') {
+        return (
+          <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
+            ✅ Good
+          </span>
+        );
+      }
+    }
+
+    return formattedValue;
   };
 
   // Clear all filters
@@ -271,7 +453,7 @@ export function FilterableTable({
                     key={column.key}
                     className="py-3 px-4 text-gray-900"
                   >
-                    {formatCellValue(row[column.key], column.type)}
+                    {formatCellValue(row[column.key], column.type, column.key)}
                   </td>
                 ))}
               </tr>
