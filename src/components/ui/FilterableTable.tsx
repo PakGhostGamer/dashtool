@@ -120,7 +120,18 @@ export function FilterableTable({
     // Add color coding for specific columns
     if (type === 'percentage' && columnKey === 'acos') {
       const numValue = Number(value);
-      if (numValue > 25) {
+      if (numValue === 0) {
+        // ACoS = 0 means no sales, which is not good
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-red-600 font-semibold">{formattedValue}</span>
+            <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
+              No Sales
+            </span>
+          </div>
+        );
+      } else if (numValue > 35) {
+        // Only show "High" if ACoS is really high (>35%)
         return (
           <div className="flex items-center gap-2">
             <span className="text-red-600 font-semibold">{formattedValue}</span>
@@ -129,29 +140,18 @@ export function FilterableTable({
             </span>
           </div>
         );
-      } else if (numValue > 15) {
-        return (
-          <div className="flex items-center gap-2">
-            <span className="text-orange-600 font-semibold">{formattedValue}</span>
-            <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-orange-100 text-orange-800 rounded-full">
-              Medium
-            </span>
-          </div>
-        );
       } else {
+        // For normal ACoS values, just show the colored value without tag
         return (
-          <div className="flex items-center gap-2">
-            <span className="text-green-600 font-semibold">{formattedValue}</span>
-            <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
-              Good
-            </span>
-          </div>
+          <span className={numValue > 25 ? 'text-red-600 font-semibold' : numValue > 15 ? 'text-orange-600 font-semibold' : 'text-green-600 font-semibold'}>
+            {formattedValue}
+          </span>
         );
       }
     } else if (type === 'number' && columnKey === 'roas') {
-      // ROAS: Green for high (>4), Orange for medium (2-4), Red for low (<2)
+      // ROAS: Only show tags for extreme values
       const numValue = Number(value);
-      if (numValue > 4) {
+      if (numValue > 6) {
         return (
           <div className="flex items-center gap-2">
             <span className="text-green-600 font-semibold">{formattedValue}</span>
@@ -160,16 +160,7 @@ export function FilterableTable({
             </span>
           </div>
         );
-      } else if (numValue > 2) {
-        return (
-          <div className="flex items-center gap-2">
-            <span className="text-orange-600 font-semibold">{formattedValue}</span>
-            <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-orange-100 text-orange-800 rounded-full">
-              Good
-            </span>
-          </div>
-        );
-      } else {
+      } else if (numValue < 1) {
         return (
           <div className="flex items-center gap-2">
             <span className="text-red-600 font-semibold">{formattedValue}</span>
@@ -178,35 +169,16 @@ export function FilterableTable({
             </span>
           </div>
         );
-      }
-    } else if (type === 'currency' && columnKey === 'sales') {
-      // Sales: Green for positive values
-      const numValue = Number(value);
-      if (numValue > 0) {
+      } else {
+        // For normal ROAS values, just show colored value without tag
         return (
-          <div className="flex items-center gap-2">
-            <span className="text-green-600 font-semibold">{formattedValue}</span>
-            <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
-              Sales
-            </span>
-          </div>
-        );
-      }
-    } else if (type === 'currency' && columnKey === 'spend') {
-      // Spend: Red for high spend
-      const numValue = Number(value);
-      if (numValue > 100) {
-        return (
-          <div className="flex items-center gap-2">
-            <span className="text-red-600 font-semibold">{formattedValue}</span>
-            <span className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
-              High Spend
-            </span>
-          </div>
+          <span className={numValue > 4 ? 'text-green-600 font-semibold' : numValue > 2 ? 'text-orange-600 font-semibold' : 'text-red-600 font-semibold'}>
+            {formattedValue}
+          </span>
         );
       }
     } else if (columnKey === 'status') {
-      // Status badges
+      // Status badges - keep these as they are meaningful
       const status = String(value).toLowerCase();
       if (status === 'wasted') {
         return (
@@ -356,7 +328,7 @@ export function FilterableTable({
                 <th
                   key={column.key}
                   className={`text-left py-3 px-4 font-semibold text-gray-700 border-b border-gray-200 ${
-                    column.sortable !== false ? 'cursor-pointer hover:bg-gray-100 transition-colors' : ''
+                    column.sortable !== false ? 'cursor-pointer' : ''
                   } ${column.width || ''}`}
                   onClick={() => column.sortable !== false && handleSort(column.key)}
                 >
@@ -376,7 +348,7 @@ export function FilterableTable({
             {sortedData.slice(0, maxRows).map((row, index) => (
               <tr
                 key={index}
-                className={`border-b border-gray-100 hover:bg-blue-50 transition-colors ${
+                className={`border-b border-gray-100 ${
                   onRowClick ? 'cursor-pointer' : ''
                 } ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}
                 onClick={() => onRowClick && onRowClick(row)}
