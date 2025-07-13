@@ -5,10 +5,8 @@ import { PPCView } from './PPCView';
 import { OrganicView } from './OrganicView';
 import { ASINView } from './ASINView';
 import { PPCAudit } from './PPCAudit';
-import { TrendAnalysis } from './TrendAnalysis';
-import { PerformanceHeatmap } from './PerformanceHeatmap';
 import { Card, CardContent } from '../ui/Card';
-import { MdBarChart, MdOutlineTrackChanges, MdEco, MdInventory, MdSearch, MdTrendingUp, MdGridOn } from 'react-icons/md';
+import { MdBarChart, MdOutlineTrackChanges, MdEco, MdInventory, MdSearch } from 'react-icons/md';
 
 export function Dashboard() {
   const [activeTab, setActiveTab] = useState('overall');
@@ -40,9 +38,7 @@ export function Dashboard() {
     { id: 'ppc', label: 'PPC View', icon: <MdOutlineTrackChanges size={20} /> },
     { id: 'organic', label: 'Organic View', icon: <MdEco size={20} /> },
     { id: 'asin', label: 'ASIN Performance', icon: <MdInventory size={20} /> },
-    { id: 'audit', label: 'PPC Audit', icon: <MdSearch size={20} /> },
-    { id: 'trends', label: 'Trend Analysis', icon: <MdTrendingUp size={20} /> },
-    { id: 'heatmap', label: 'Performance Heatmap', icon: <MdGridOn size={20} /> }
+    { id: 'audit', label: 'PPC Audit', icon: <MdSearch size={20} /> }
   ];
 
   const renderContent = () => {
@@ -57,10 +53,6 @@ export function Dashboard() {
         return <ASINView />;
       case 'audit':
         return <PPCAudit />;
-      case 'trends':
-        return <TrendAnalysis />;
-      case 'heatmap':
-        return <PerformanceHeatmap />;
       default:
         return <OverallView />;
     }
