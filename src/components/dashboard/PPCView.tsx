@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from '../ui/Card';
 import { KPICard } from '../ui/KPICard';
+import { FilterableTable } from '../ui/FilterableTable';
 import { Tooltip } from '../ui/Tooltip';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import { Target, MousePointer, Eye, TrendingUp, DollarSign, ShoppingCart } from 'lucide-react';
@@ -425,131 +426,41 @@ export function PPCView() {
           <div className="grid lg:grid-cols-2 gap-6 mb-8">
             {/* High Performing Campaigns */}
             <Card>
-              <CardHeader>
-                <h4 className="text-md font-semibold text-green-700">🏆 High Performing Campaigns</h4>
-              </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b bg-green-50">
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="A group of ad groups that share the same budget and targeting settings. Data Source: Amazon Search Term Reports - Campaign column">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Campaign</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="Sales directly attributed to paid advertising campaigns and search terms. Data Source: Amazon Search Term Reports - Sales column">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Sales</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The total amount spent on advertising campaigns. Data Source: Amazon Search Term Reports - Spend column">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Spend</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The percentage of advertising spend relative to sales. Lower ACoS indicates better efficiency. Formula: (Ad Spend / Sales) × 100. Data Source: Calculated from Search Term Reports - Spend and Sales columns">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">ACoS</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The revenue generated for every dollar spent on advertising. Higher ROAS indicates better performance. Formula: Sales / Ad Spend. Data Source: Calculated from Search Term Reports - Sales and Spend columns">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">ROAS</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The average amount spent for each click on your ads. Formula: Spend / Clicks. Data Source: Calculated from Search Term Reports - Spend and Clicks columns">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Avg CPC</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The average bid amount for keywords in this campaign. Data Source: Amazon Search Term Reports - Bid column">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Avg Bid</span>
-                          </Tooltip>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {highPerformingCampaigns.map((campaign, index) => (
-                        <tr key={index} className="border-b hover:bg-green-25">
-                          <td className="py-2 px-2 font-medium">{campaign.campaign}</td>
-                          <td className="py-2 px-2 text-green-600 font-semibold">{formatCurrency(campaign.sales)}</td>
-                          <td className="py-2 px-2">{formatCurrency(campaign.spend)}</td>
-                          <td className="py-2 px-2">{formatPercentage(campaign.acos)}</td>
-                          <td className="py-2 px-2 text-green-600">{campaign.roas.toFixed(2)}</td>
-                          <td className="py-2 px-2 text-green-600">{formatCurrency(campaign.avgCPC)}</td>
-                          <td className="py-2 px-2 text-green-600">{campaign.avgBid ? formatCurrency(campaign.avgBid) : 'N/A'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <FilterableTable
+                  title="🏆 High Performing Campaigns"
+                  data={highPerformingCampaigns}
+                  columns={[
+                    { key: 'campaign', label: 'Campaign', type: 'text' },
+                    { key: 'sales', label: 'Sales', type: 'currency' },
+                    { key: 'spend', label: 'Spend', type: 'currency' },
+                    { key: 'acos', label: 'ACoS', type: 'percentage' },
+                    { key: 'roas', label: 'ROAS', type: 'number' },
+                    { key: 'avgCPC', label: 'Avg CPC', type: 'currency' },
+                    { key: 'avgBid', label: 'Avg Bid', type: 'currency' }
+                  ]}
+                  maxRows={20}
+                />
               </CardContent>
             </Card>
 
             {/* Low Performing Campaigns */}
             <Card>
-              <CardHeader>
-                <h4 className="text-md font-semibold text-red-700">⚠️ Low Performing Campaigns</h4>
-              </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b bg-red-50">
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="A group of ad groups that share the same budget and targeting settings. Data Source: Amazon Search Term Reports - Campaign column">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Campaign</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="Sales directly attributed to paid advertising campaigns and search terms. Data Source: Amazon Search Term Reports - Sales column">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Sales</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The total amount spent on advertising campaigns. Data Source: Amazon Search Term Reports - Spend column">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Spend</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The percentage of advertising spend relative to sales. Lower ACoS indicates better efficiency. Formula: (Ad Spend / Sales) × 100. Data Source: Calculated from Search Term Reports - Spend and Sales columns">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">ACoS</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The revenue generated for every dollar spent on advertising. Higher ROAS indicates better performance. Formula: Sales / Ad Spend. Data Source: Calculated from Search Term Reports - Sales and Spend columns">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">ROAS</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The average amount spent for each click on your ads. Formula: Spend / Clicks. Data Source: Calculated from Search Term Reports - Spend and Clicks columns">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Avg CPC</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The average bid amount for keywords in this campaign. Data Source: Amazon Search Term Reports - Bid column">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Avg Bid</span>
-                          </Tooltip>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {lowPerformingCampaigns.map((campaign, index) => (
-                        <tr key={index} className="border-b hover:bg-red-25">
-                          <td className="py-2 px-2 font-medium">{campaign.campaign}</td>
-                          <td className="py-2 px-2 text-red-600 font-semibold">{formatCurrency(campaign.sales)}</td>
-                          <td className="py-2 px-2">{formatCurrency(campaign.spend)}</td>
-                          <td className="py-2 px-2">{formatPercentage(campaign.acos)}</td>
-                          <td className="py-2 px-2 text-red-600">{campaign.roas.toFixed(2)}</td>
-                          <td className="py-2 px-2 text-red-600">{formatCurrency(campaign.avgCPC)}</td>
-                          <td className="py-2 px-2 text-red-600">{campaign.avgBid ? formatCurrency(campaign.avgBid) : 'N/A'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <FilterableTable
+                  title="⚠️ Low Performing Campaigns"
+                  data={lowPerformingCampaigns}
+                  columns={[
+                    { key: 'campaign', label: 'Campaign', type: 'text' },
+                    { key: 'sales', label: 'Sales', type: 'currency' },
+                    { key: 'spend', label: 'Spend', type: 'currency' },
+                    { key: 'acos', label: 'ACoS', type: 'percentage' },
+                    { key: 'roas', label: 'ROAS', type: 'number' },
+                    { key: 'avgCPC', label: 'Avg CPC', type: 'currency' },
+                    { key: 'avgBid', label: 'Avg Bid', type: 'currency' }
+                  ]}
+                  maxRows={20}
+                />
               </CardContent>
             </Card>
           </div>
@@ -558,131 +469,41 @@ export function PPCView() {
           <div className="grid lg:grid-cols-2 gap-6 mb-8">
             {/* High ACoS Campaigns */}
             <Card>
-              <CardHeader>
-                <h4 className="text-md font-semibold text-orange-700">🔥 High ACoS Campaigns</h4>
-              </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b bg-orange-50">
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="A group of ad groups that share the same budget and targeting settings. Data Source: Amazon Search Term Reports - Campaign column">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Campaign</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The percentage of advertising spend relative to sales. Lower ACoS indicates better efficiency. Formula: (Ad Spend / Sales) × 100. Data Source: Calculated from Search Term Reports - Spend and Sales columns">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">ACoS</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="Sales directly attributed to paid advertising campaigns and search terms. Data Source: Amazon Search Term Reports - Sales column">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Sales</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The total amount spent on advertising campaigns. Data Source: Amazon Search Term Reports - Spend column">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Spend</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The revenue generated for every dollar spent on advertising. Higher ROAS indicates better performance. Formula: Sales / Ad Spend. Data Source: Calculated from Search Term Reports - Sales and Spend columns">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">ROAS</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The average amount spent for each click on your ads. Formula: Spend / Clicks. Data Source: Calculated from Search Term Reports - Spend and Clicks columns">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Avg CPC</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The average bid amount for keywords in this campaign. Data Source: Amazon Search Term Reports - Bid column">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Avg Bid</span>
-                          </Tooltip>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {highAcosCampaigns.map((campaign, index) => (
-                        <tr key={index} className="border-b hover:bg-orange-25">
-                          <td className="py-2 px-2 font-medium">{campaign.campaign}</td>
-                          <td className="py-2 px-2 text-orange-600 font-semibold">{formatPercentage(campaign.acos)}</td>
-                          <td className="py-2 px-2">{formatCurrency(campaign.sales)}</td>
-                          <td className="py-2 px-2">{formatCurrency(campaign.spend)}</td>
-                          <td className="py-2 px-2 text-orange-600">{campaign.roas.toFixed(2)}</td>
-                          <td className="py-2 px-2 text-orange-600">{formatCurrency(campaign.avgCPC)}</td>
-                          <td className="py-2 px-2 text-orange-600">{campaign.avgBid ? formatCurrency(campaign.avgBid) : 'N/A'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <FilterableTable
+                  title="🔥 High ACoS Campaigns"
+                  data={highAcosCampaigns}
+                  columns={[
+                    { key: 'campaign', label: 'Campaign', type: 'text' },
+                    { key: 'acos', label: 'ACoS', type: 'percentage' },
+                    { key: 'sales', label: 'Sales', type: 'currency' },
+                    { key: 'spend', label: 'Spend', type: 'currency' },
+                    { key: 'roas', label: 'ROAS', type: 'number' },
+                    { key: 'avgCPC', label: 'Avg CPC', type: 'currency' },
+                    { key: 'avgBid', label: 'Avg Bid', type: 'currency' }
+                  ]}
+                  maxRows={20}
+                />
               </CardContent>
             </Card>
 
             {/* Low ACoS Campaigns */}
             <Card>
-              <CardHeader>
-                <h4 className="text-md font-semibold text-blue-700">💎 Low ACoS Campaigns</h4>
-              </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b bg-blue-50">
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="A group of ad groups that share the same budget and targeting settings. Data Source: Amazon Search Term Reports - Campaign column">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Campaign</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The percentage of advertising spend relative to sales. Lower ACoS indicates better efficiency. Formula: (Ad Spend / Sales) × 100. Data Source: Calculated from Search Term Reports - Spend and Sales columns">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">ACoS</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="Sales directly attributed to paid advertising campaigns and search terms. Data Source: Amazon Search Term Reports - Sales column">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Sales</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The total amount spent on advertising campaigns. Data Source: Amazon Search Term Reports - Spend column">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Spend</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The revenue generated for every dollar spent on advertising. Higher ROAS indicates better performance. Formula: Sales / Ad Spend. Data Source: Calculated from Search Term Reports - Sales and Spend columns">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">ROAS</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The average amount spent for each click on your ads. Formula: Spend / Clicks. Data Source: Calculated from Search Term Reports - Spend and Clicks columns">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Avg CPC</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The average bid amount for keywords in this campaign. Data Source: Amazon Search Term Reports - Bid column">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Avg Bid</span>
-                          </Tooltip>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {lowAcosCampaigns.map((campaign, index) => (
-                        <tr key={index} className="border-b hover:bg-blue-25">
-                          <td className="py-2 px-2 font-medium">{campaign.campaign}</td>
-                          <td className="py-2 px-2 text-blue-600 font-semibold">{formatPercentage(campaign.acos)}</td>
-                          <td className="py-2 px-2">{formatCurrency(campaign.sales)}</td>
-                          <td className="py-2 px-2">{formatCurrency(campaign.spend)}</td>
-                          <td className="py-2 px-2 text-blue-600">{campaign.roas.toFixed(2)}</td>
-                          <td className="py-2 px-2 text-blue-600">{formatCurrency(campaign.avgCPC)}</td>
-                          <td className="py-2 px-2 text-blue-600">{campaign.avgBid ? formatCurrency(campaign.avgBid) : 'N/A'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <FilterableTable
+                  title="💎 Low ACoS Campaigns"
+                  data={lowAcosCampaigns}
+                  columns={[
+                    { key: 'campaign', label: 'Campaign', type: 'text' },
+                    { key: 'acos', label: 'ACoS', type: 'percentage' },
+                    { key: 'sales', label: 'Sales', type: 'currency' },
+                    { key: 'spend', label: 'Spend', type: 'currency' },
+                    { key: 'roas', label: 'ROAS', type: 'number' },
+                    { key: 'avgCPC', label: 'Avg CPC', type: 'currency' },
+                    { key: 'avgBid', label: 'Avg Bid', type: 'currency' }
+                  ]}
+                  maxRows={20}
+                />
               </CardContent>
             </Card>
           </div>
@@ -691,131 +512,41 @@ export function PPCView() {
           <div className="grid lg:grid-cols-2 gap-6">
             {/* High Performing Search Terms */}
             <Card>
-              <CardHeader>
-                <h4 className="text-md font-semibold text-green-700">🎯 High Performing Search Terms</h4>
-              </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b bg-green-50">
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="A group of ad groups that share the same budget and targeting settings. Data Source: Amazon Search Term Reports - Campaign column">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Campaign</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="Sales directly attributed to paid advertising campaigns and search terms. Data Source: Amazon Search Term Reports - Sales column">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Sales</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The total amount spent on advertising campaigns. Data Source: Amazon Search Term Reports - Spend column">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Spend</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The percentage of advertising spend relative to sales. Lower ACoS indicates better efficiency. Formula: (Ad Spend / Sales) × 100. Data Source: Calculated from Search Term Reports - Spend and Sales columns">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">ACoS</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The percentage of clicks that resulted in an order. Formula: (Orders / Clicks) × 100. Data Source: Calculated from Search Term Reports - Orders and Clicks columns">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">CVR</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The average amount spent for each click on your ads. Formula: Spend / Clicks. Data Source: Calculated from Search Term Reports - Spend and Clicks columns">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Avg CPC</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The average bid amount for keywords in this campaign. Data Source: Amazon Search Term Reports - Bid column">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Avg Bid</span>
-                          </Tooltip>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {highPerformingSearchTerms.map((term, index) => (
-                        <tr key={index} className="border-b hover:bg-green-25">
-                          <td className="py-2 px-2 font-medium">{term.searchTerm}</td>
-                          <td className="py-2 px-2 text-green-600 font-semibold">{formatCurrency(term.sales)}</td>
-                          <td className="py-2 px-2">{formatCurrency(term.spend)}</td>
-                          <td className="py-2 px-2">{formatPercentage(term.acos)}</td>
-                          <td className="py-2 px-2 text-green-600">{formatPercentage(term.cvr)}</td>
-                          <td className="py-2 px-2 text-green-600">{formatCurrency(term.avgCPC)}</td>
-                          <td className="py-2 px-2 text-green-600">{term.avgBid ? formatCurrency(term.avgBid) : 'N/A'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <FilterableTable
+                  title="🎯 High Performing Search Terms"
+                  data={highPerformingSearchTerms}
+                  columns={[
+                    { key: 'searchTerm', label: 'Search Term', type: 'text' },
+                    { key: 'sales', label: 'Sales', type: 'currency' },
+                    { key: 'spend', label: 'Spend', type: 'currency' },
+                    { key: 'acos', label: 'ACoS', type: 'percentage' },
+                    { key: 'cvr', label: 'CVR', type: 'percentage' },
+                    { key: 'avgCPC', label: 'Avg CPC', type: 'currency' },
+                    { key: 'avgBid', label: 'Avg Bid', type: 'currency' }
+                  ]}
+                  maxRows={20}
+                />
               </CardContent>
             </Card>
 
             {/* Low Performing Search Terms */}
             <Card>
-              <CardHeader>
-                <h4 className="text-md font-semibold text-red-700">📉 Low Performing Search Terms</h4>
-              </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b bg-red-50">
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="A group of ad groups that share the same budget and targeting settings. Data Source: Amazon Search Term Reports - Campaign column">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Campaign</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="Sales directly attributed to paid advertising campaigns and search terms. Data Source: Amazon Search Term Reports - Sales column">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Sales</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The total amount spent on advertising campaigns. Data Source: Amazon Search Term Reports - Spend column">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Spend</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The percentage of advertising spend relative to sales. Lower ACoS indicates better efficiency. Formula: (Ad Spend / Sales) × 100. Data Source: Calculated from Search Term Reports - Spend and Sales columns">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">ACoS</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The percentage of clicks that resulted in an order. Formula: (Orders / Clicks) × 100. Data Source: Calculated from Search Term Reports - Orders and Clicks columns">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">CVR</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The average amount spent for each click on your ads. Formula: Spend / Clicks. Data Source: Calculated from Search Term Reports - Spend and Clicks columns">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Avg CPC</span>
-                          </Tooltip>
-                        </th>
-                        <th className="text-left py-2 px-2 font-medium">
-                          <Tooltip content="The average bid amount for keywords in this campaign. Data Source: Amazon Search Term Reports - Bid column">
-                            <span className="cursor-help hover:text-gray-800 transition-colors">Avg Bid</span>
-                          </Tooltip>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {lowPerformingSearchTerms.map((term, index) => (
-                        <tr key={index} className="border-b hover:bg-red-25">
-                          <td className="py-2 px-2 font-medium">{term.searchTerm}</td>
-                          <td className="py-2 px-2 text-red-600 font-semibold">{formatCurrency(term.sales)}</td>
-                          <td className="py-2 px-2">{formatCurrency(term.spend)}</td>
-                          <td className="py-2 px-2">{formatPercentage(term.acos)}</td>
-                          <td className="py-2 px-2 text-red-600">{formatPercentage(term.cvr)}</td>
-                          <td className="py-2 px-2 text-red-600">{formatCurrency(term.avgCPC)}</td>
-                          <td className="py-2 px-2 text-red-600">{term.avgBid ? formatCurrency(term.avgBid) : 'N/A'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <FilterableTable
+                  title="📉 Low Performing Search Terms"
+                  data={lowPerformingSearchTerms}
+                  columns={[
+                    { key: 'searchTerm', label: 'Search Term', type: 'text' },
+                    { key: 'sales', label: 'Sales', type: 'currency' },
+                    { key: 'spend', label: 'Spend', type: 'currency' },
+                    { key: 'acos', label: 'ACoS', type: 'percentage' },
+                    { key: 'cvr', label: 'CVR', type: 'percentage' },
+                    { key: 'avgCPC', label: 'Avg CPC', type: 'currency' },
+                    { key: 'avgBid', label: 'Avg Bid', type: 'currency' }
+                  ]}
+                  maxRows={20}
+                />
               </CardContent>
             </Card>
           </div>

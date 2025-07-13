@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader } from '../ui/Card';
 import { KPICard } from '../ui/KPICard';
+import { FilterableTable } from '../ui/FilterableTable';
 import { Tooltip } from '../ui/Tooltip';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
 import { DollarSign, TrendingUp, Leaf, ShoppingCart, Users } from 'lucide-react';
@@ -200,68 +201,20 @@ export function OrganicView() {
       </Card>
 
       <Card className="mt-8">
-        <CardHeader>
-          <h3 className="text-lg font-semibold">Top Organic Products</h3>
-        </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="py-2 px-4 text-left font-medium">
-                    <Tooltip content="A unique identifier for each product variant. Used to track individual product performance. Data Source: Amazon Business Reports - SKU column">
-                      <span className="cursor-help hover:text-gray-800 transition-colors">SKU</span>
-                    </Tooltip>
-                  </th>
-                  <th className="py-2 px-4 text-left font-medium">
-                    <Tooltip content="The name of the product as it appears in Amazon Business Reports. Data Source: Amazon Business Reports - Title column">
-                      <span className="cursor-help hover:text-gray-800 transition-colors">Product Name</span>
-                    </Tooltip>
-                  </th>
-                  <th className="py-2 px-4 text-left font-medium">
-                    <Tooltip content="Sales generated from natural search results without any paid advertising. Calculated as Total Sales minus PPC Sales. Data Source: Calculated from Business Reports and Search Term Reports">
-                      <span className="cursor-help hover:text-gray-800 transition-colors">Organic Sales</span>
-                    </Tooltip>
-                  </th>
-                  <th className="py-2 px-4 text-left font-medium">
-                    <Tooltip content="The number of individual product units that were ordered through organic (non-paid) search results. Data Source: Amazon Business Reports - Units Ordered column">
-                      <span className="cursor-help hover:text-gray-800 transition-colors">Units Sold</span>
-                    </Tooltip>
-                  </th>
-                  <th className="py-2 px-4 text-left font-medium">
-                    <Tooltip content="The number of unique visits to your product detail pages. Each session can include multiple page views. Data Source: Amazon Business Reports - Sessions column">
-                      <span className="cursor-help hover:text-gray-800 transition-colors">Sessions</span>
-                    </Tooltip>
-                  </th>
-                  <th className="py-2 px-4 text-left font-medium">
-                    <Tooltip content="The percentage of sessions that resulted in a purchase. This is Amazon's version of conversion rate. Data Source: Amazon Business Reports - Unit Session Percentage column">
-                      <span className="cursor-help hover:text-gray-800 transition-colors">CVR (%)</span>
-                    </Tooltip>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {topOrganicProducts.map((product, index) => (
-                  <tr key={index} className="border-b hover:bg-gray-50">
-                    <td className="py-2 px-4 font-mono text-xs">{product.asin}</td>
-                    <td className="py-2 px-4">{product.productName}</td>
-                    <td className="py-2 px-4 font-medium">{formatCurrency(product.organicSales)}</td>
-                    <td className="py-2 px-4">{product.unitsSold}</td>
-                    <td className="py-2 px-4">{product.sessions}</td>
-                    <td className="py-2 px-4">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        product.cvr >= 10 ? 'bg-green-100 text-green-800' :
-                        product.cvr >= 5 ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
-                        {product.cvr.toFixed(1)}%
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <FilterableTable
+            title="Top Organic Products"
+            data={topOrganicProducts}
+            columns={[
+              { key: 'asin', label: 'SKU', type: 'text' },
+              { key: 'productName', label: 'Product Name', type: 'text' },
+              { key: 'organicSales', label: 'Organic Sales', type: 'currency' },
+              { key: 'unitsSold', label: 'Units Sold', type: 'number' },
+              { key: 'sessions', label: 'Sessions', type: 'number' },
+              { key: 'cvr', label: 'CVR (%)', type: 'percentage' }
+            ]}
+            maxRows={20}
+          />
         </CardContent>
       </Card>
     </div>

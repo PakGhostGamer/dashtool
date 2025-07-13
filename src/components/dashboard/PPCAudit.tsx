@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from '../ui/Card';
 import { KPICard } from '../ui/KPICard';
+import { FilterableTable } from '../ui/FilterableTable';
 import { Button } from '../ui/Button';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { AlertTriangle, TrendingDown, Target, Search } from 'lucide-react';
@@ -263,94 +264,28 @@ export function PPCAudit() {
       </div>
 
       <Card>
-        <CardHeader>
-          <h3 className="text-lg font-semibold">Search Term Analysis</h3>
-        </CardHeader>
         <CardContent>
-          {/* Filters */}
-          <div className="flex flex-wrap gap-4 mb-4 items-end">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Campaign</label>
-              <select value={campaignFilter} onChange={e => setCampaignFilter(e.target.value)} className="border px-2 py-1 rounded text-sm">
-                <option value="">All</option>
-                {uniqueCampaigns.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Search Term</label>
-              <input type="text" value={searchTermFilter} onChange={e => setSearchTermFilter(e.target.value)} placeholder="Search..." className="border px-2 py-1 rounded text-sm" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">ACoS Min</label>
-              <input type="number" value={acosMin} onChange={e => setAcosMin(e.target.value)} placeholder="%" className="border px-2 py-1 rounded text-sm w-20" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">ACoS Max</label>
-              <input type="number" value={acosMax} onChange={e => setAcosMax(e.target.value)} placeholder="%" className="border px-2 py-1 rounded text-sm w-20" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Status</label>
-              <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="border px-2 py-1 rounded text-sm">
-                <option value="">All</option>
-                <option value="Good">Good</option>
-                <option value="High ACoS">High ACoS</option>
-                <option value="Wasted">Wasted</option>
-              </select>
-            </div>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2 px-4 font-medium">Search Term</th>
-                  <th className="text-left py-2 px-4 font-medium">Campaign</th>
-                  <th className="text-left py-2 px-4 font-medium">Spend</th>
-                  <th className="text-left py-2 px-4 font-medium">Sales</th>
-                  <th className="text-left py-2 px-4 font-medium">ACoS</th>
-                  <th className="text-left py-2 px-4 font-medium">CTR</th>
-                  <th className="text-left py-2 px-4 font-medium">CVR</th>
-                  <th className="text-left py-2 px-4 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredSearchTermAnalysis
-                  .sort((a, b) => b.spend - a.spend)
-                  .slice(0, 20)
-                  .map((term, index) => {
-                    let status = '';
-                    if (term.sales === 0) status = 'Wasted';
-                    else if (term.acos > acosThreshold) status = 'High ACoS';
-                    else status = 'Good';
-                    return (
-                      <tr key={index} className={`border-b hover:bg-gray-50 ${
-                        status === 'Wasted' ? 'bg-red-50' : status === 'High ACoS' ? 'bg-yellow-100' : 'bg-green-50'
-                      }`}>
-                        <td className="py-2 px-4">{term.searchTerm}</td>
-                        <td className="py-2 px-4">{term.campaign}</td>
-                        <td className="py-2 px-4">{formatCurrency(term.spend)}</td>
-                        <td className="py-2 px-4">{formatCurrency(term.sales)}</td>
-                        <td className="py-2 px-4">
-                          <span className={term.acos > acosThreshold ? 'text-red-600 font-medium' : ''}>
-                            {formatPercentage(term.acos)}
-                          </span>
-                        </td>
-                        <td className="py-2 px-4">{formatPercentage(term.ctr)}</td>
-                        <td className="py-2 px-4">{formatPercentage(term.cvr)}</td>
-                        <td className="py-2 px-4">
-                          {status === 'Wasted' ? (
-                            <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">Wasted</span>
-                          ) : status === 'High ACoS' ? (
-                            <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">High ACoS</span>
-                          ) : (
-                            <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Good</span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-              </tbody>
-            </table>
-          </div>
+          <FilterableTable
+            title="Search Term Analysis"
+            data={searchTermAnalysis.map(term => {
+              let status = '';
+              if (term.sales === 0) status = 'Wasted';
+              else if (term.acos > acosThreshold) status = 'High ACoS';
+              else status = 'Good';
+              return { ...term, status };
+            })}
+            columns={[
+              { key: 'searchTerm', label: 'Search Term', type: 'text' },
+              { key: 'campaign', label: 'Campaign', type: 'text' },
+              { key: 'spend', label: 'Spend', type: 'currency' },
+              { key: 'sales', label: 'Sales', type: 'currency' },
+              { key: 'acos', label: 'ACoS', type: 'percentage' },
+              { key: 'ctr', label: 'CTR', type: 'percentage' },
+              { key: 'cvr', label: 'CVR', type: 'percentage' },
+              { key: 'status', label: 'Status', type: 'text' }
+            ]}
+            maxRows={50}
+          />
         </CardContent>
       </Card>
     </div>

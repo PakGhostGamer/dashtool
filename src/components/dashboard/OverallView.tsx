@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from '../ui/Card';
 import { KPICard } from '../ui/KPICard';
+import { FilterableTable } from '../ui/FilterableTable';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { DollarSign, ShoppingCart, Users, TrendingUp } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
@@ -374,91 +375,26 @@ export function OverallView() {
 
       {/* Match Type Performance Analysis */}
       <Card className="mt-8">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Match Type Performance Analysis</h3>
-            <div className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">
-              <span className="w-2 h-2 bg-blue-500 rounded-full mr-1"></span>
-              NEW
-            </div>
-          </div>
-        </CardHeader>
         <CardContent>
-          {matchTypeArray.length === 0 ? (
-            <div className="text-gray-500 py-8 text-center">No Search Term Report data uploaded yet.</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-gray-50">
-                    <th className="py-3 px-4 text-left font-semibold text-gray-700">Match Type</th>
-                    <th className="py-3 px-4 text-left font-semibold text-gray-700">Spend</th>
-                    <th className="py-3 px-4 text-left font-semibold text-gray-700">Sales</th>
-                    <th className="py-3 px-4 text-left font-semibold text-gray-700">Orders</th>
-                    <th className="py-3 px-4 text-left font-semibold text-gray-700">Impressions</th>
-                    <th className="py-3 px-4 text-left font-semibold text-gray-700">Clicks</th>
-                    <th className="py-3 px-4 text-left font-semibold text-gray-700">ACoS</th>
-                    <th className="py-3 px-4 text-left font-semibold text-gray-700">ROAS</th>
-                    <th className="py-3 px-4 text-left font-semibold text-gray-700">CTR</th>
-                    <th className="py-3 px-4 text-left font-semibold text-gray-700">CVR</th>
-                    <th className="py-3 px-4 text-left font-semibold text-gray-700">Sales %</th>
-                    <th className="py-3 px-4 text-left font-semibold text-gray-700">Spend %</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {matchTypeArray.map((match, index) => (
-                    <tr key={index} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4 font-medium">
-                        <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold ${
-                          match.matchType === 'Broad' ? 'bg-purple-100 text-purple-800' :
-                          match.matchType === 'Phrase' ? 'bg-blue-100 text-blue-800' :
-                          match.matchType === 'Exact' ? 'bg-green-100 text-green-800' :
-                          'bg-orange-100 text-orange-800'
-                        }`}>
-                          {match.matchType}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">{formatCurrency(match.spend)}</td>
-                      <td className="py-3 px-4">{formatCurrency(match.sales)}</td>
-                      <td className="py-3 px-4">{match.orders}</td>
-                      <td className="py-3 px-4">{match.impressions.toLocaleString()}</td>
-                      <td className="py-3 px-4">{match.clicks}</td>
-                      <td className="py-3 px-4">
-                        <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold ${
-                          match.acos <= 15 ? 'bg-green-100 text-green-800' :
-                          match.acos <= 25 ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-red-100 text-red-800'
-                        }`}>
-                          {match.acos.toFixed(1)}%
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold ${
-                          match.roas >= 4 ? 'bg-green-100 text-green-800' :
-                          match.roas >= 2 ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-red-100 text-red-800'
-                        }`}>
-                          {match.roas.toFixed(2)}x
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">{match.ctr.toFixed(2)}%</td>
-                      <td className="py-3 px-4">{match.cvr.toFixed(2)}%</td>
-                      <td className="py-3 px-4">
-                        <span className="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-semibold">
-                          {match.salesPercentage.toFixed(1)}%
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-semibold">
-                          {match.spendPercentage.toFixed(1)}%
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <FilterableTable
+            title="Match Type Performance Analysis"
+            data={matchTypeArray}
+            columns={[
+              { key: 'matchType', label: 'Match Type', type: 'text' },
+              { key: 'spend', label: 'Spend', type: 'currency' },
+              { key: 'sales', label: 'Sales', type: 'currency' },
+              { key: 'orders', label: 'Orders', type: 'number' },
+              { key: 'impressions', label: 'Impressions', type: 'number' },
+              { key: 'clicks', label: 'Clicks', type: 'number' },
+              { key: 'acos', label: 'ACoS', type: 'percentage' },
+              { key: 'roas', label: 'ROAS', type: 'number' },
+              { key: 'ctr', label: 'CTR', type: 'percentage' },
+              { key: 'cvr', label: 'CVR', type: 'percentage' },
+              { key: 'salesPercentage', label: 'Sales %', type: 'percentage' },
+              { key: 'spendPercentage', label: 'Spend %', type: 'percentage' }
+            ]}
+            maxRows={20}
+          />
         </CardContent>
       </Card>
 
@@ -614,42 +550,19 @@ export function OverallView() {
 
       {/* Detailed BR Data Table */}
       <Card className="mt-8">
-        <CardHeader>
-          <h3 className="text-lg font-semibold">Business Report Data (Detailed)</h3>
-        </CardHeader>
         <CardContent>
-          {(() => { console.log('BR table data:', state.businessReports); return null; })()}
-          {state.businessReports.length === 0 ? (
-            <div className="text-gray-500 py-8 text-center">No Business Report data uploaded yet.</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b">
-                    <th className="py-2 px-4 text-left font-medium">SKU</th>
-                    <th className="py-2 px-4 text-left font-medium">Sessions</th>
-                    <th className="py-2 px-4 text-left font-medium">Units Ordered</th>
-                    <th className="py-2 px-4 text-left font-medium">Sales</th>
-                    <th className="py-2 px-4 text-left font-medium">Conversion Rate (%)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {state.businessReports.slice(0, 50).map((row, idx) => (
-                    <tr key={idx} className="border-b hover:bg-gray-50">
-                      <td className="py-2 px-4">{row.sku}</td>
-                      <td className="py-2 px-4">{row.sessions}</td>
-                      <td className="py-2 px-4">{row.unitsOrdered}</td>
-                      <td className="py-2 px-4">{formatCurrency(row.sales)}</td>
-                      <td className="py-2 px-4">{row.conversionRate}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {state.businessReports.length > 50 && (
-                <div className="text-xs text-gray-400 mt-2">Showing first 50 rows only.</div>
-              )}
-            </div>
-          )}
+          <FilterableTable
+            title="Business Report Data (Detailed)"
+            data={state.businessReports}
+            columns={[
+              { key: 'sku', label: 'SKU', type: 'text' },
+              { key: 'sessions', label: 'Sessions', type: 'number' },
+              { key: 'unitsOrdered', label: 'Units Ordered', type: 'number' },
+              { key: 'sales', label: 'Sales', type: 'currency' },
+              { key: 'conversionRate', label: 'Conversion Rate (%)', type: 'percentage' }
+            ]}
+            maxRows={100}
+          />
         </CardContent>
       </Card>
 
