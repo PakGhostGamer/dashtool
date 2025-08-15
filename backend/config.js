@@ -3,6 +3,7 @@ const config = {
   server: {
     port: process.env.PORT || 3001,
     corsOrigin: process.env.CORS_ORIGIN || '*', // Allow all origins for deployment; restrict in production if needed
+    downloadDomain: process.env.DOWNLOAD_DOMAIN || 'http://localhost:3001' // Domain for download URLs
   },
   gemini: {
     apiKey: process.env.GEMINI_API_KEY || 'AIzaSyB2TYXIwocrojS7EIMqPt0m0KFQLOCdfes'

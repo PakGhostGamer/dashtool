@@ -21,4 +21,6 @@ services:
       - key: CORS_ORIGIN
         value: https://pakghostgamer.github.io
       - key: DISCORD_WEBHOOK_URL
-        value: https://discord.com/api/webhooks/1405309205140865106/pnhcTcOcXQs2Aed4-iPOQwt9Z_w22fcd1Do-3anH3CdiYiByhs-7Eb9nSKbpmCFs6FMx 
+        value: https://discord.com/api/webhooks/1405309205140865106/pnhcTcOcXQs2Aed4-iPOQwt9Z_w22fcd1Do-3anH3CdiYiByhs-7Eb9nSKbpmCFs6FMx
+      - key: DOWNLOAD_DOMAIN
+        value: https://amazon-dashboard-backend.onrender.com 
