@@ -1,0 +1,33 @@
+{
+  "name": "amazon-dashboard-backend",
+  "version": "1.0.0",
+  "description": "Backend server for Amazon Dashboard with SMTP email functionality",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js --ignore '*.test.js' --ignore 'node_modules/'",
+    "dev:debug": "nodemon --inspect server.js",
+    "build": "echo 'No build step required'",
+    "test": "node test-server.js",
+    "health": "curl http://localhost:3001/api/health"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "cors": "^2.8.5",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "keywords": [
+    "amazon",
+    "dashboard",
+    "smtp",
+    "email"
+  ],
+  "author": "eCom Gliders",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
