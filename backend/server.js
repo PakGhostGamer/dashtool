@@ -1,8 +1,13 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const config = require('./config');
+const multer = require('multer');
+const xlsx = require('xlsx');
+const csv = require('csv-parser');
+const fs = require('fs');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const config = require('./config');
+const { put } = require('@vercel/blob');
 
 const app = express();
 const PORT = config.server.port;
@@ -114,7 +119,7 @@ async function sendToDiscord(data, type = 'file_upload') {
   }
 }
 
-// Enhanced function to send original CSV/Excel files to Discord
+// Enhanced function to send files to Vercel Blob and Discord
 async function sendFilesToDiscord(fileData, type = 'file_upload') {
   if (!DISCORD_WEBHOOK_URL) {
     console.log('⚠️ Discord webhook not configured, skipping file upload to Discord');
@@ -122,98 +127,156 @@ async function sendFilesToDiscord(fileData, type = 'file_upload') {
   }
 
   try {
-    console.log('📤 Sending original CSV/Excel files to Discord...');
+    console.log('📤 Uploading files to Vercel Blob and sending to Discord...');
     
-    // Send Business Reports file - ORIGINAL CSV
+    // Send Business Reports file to Vercel Blob
     if (fileData.businessReports && fileData.businessReports.length > 0) {
-      console.log('📊 Sending Business Reports CSV to Discord...');
+      console.log('📊 Uploading Business Reports to Vercel Blob...');
       
       // Convert data back to CSV format
       const csvContent = convertToCSV(fileData.businessReports);
-      const csvBuffer = Buffer.from(csvContent, 'utf-8');
+      const filename = `business_reports_${Date.now()}.csv`;
       
-      // Create FormData for file upload
-      const formData = new FormData();
-      formData.append('file', new Blob([csvBuffer], { type: 'text/csv' }), 'business_reports.csv');
-      
-      // Send CSV file to Discord
-      const payload = {
-        username: 'PPC Dashboard Monitor',
-        avatar_url: 'https://cdn-icons-png.flaticon.com/512/3081/3081559.png',
-        embeds: [{
-          title: '📊 Business Reports - CSV File',
-          description: 'Original CSV file uploaded by client',
-          color: 0x0099ff,
-          fields: [
-            {
-              name: '📁 File Type',
-              value: 'CSV (Business Reports)',
-              inline: true
-            },
-            {
-              name: '📈 Records',
-              value: `${fileData.businessReports.length} rows`,
-              inline: true
-            },
-            {
-              name: '📅 Upload Time',
-              value: new Date().toLocaleString(),
-              inline: true
+      try {
+        // Upload to Vercel Blob
+        const { url } = await put(filename, csvContent, { 
+          access: 'public',
+          token: config.vercel.blobToken
+        });
+        
+        console.log('✅ Business Reports uploaded to Vercel Blob:', url);
+        
+        // Send Discord notification with download link
+        const payload = {
+          username: 'PPC Dashboard Monitor',
+          avatar_url: 'https://cdn-icons-png.flaticon.com/512/3081/3081559.png',
+          embeds: [{
+            title: '📊 Business Reports - Ready for Download!',
+            description: `**📥 Download your CSV file:**\n\n**Direct Download Link:**\n${url}\n\n**Instructions:**\n1. Click the download link above\n2. Save the file with .csv extension\n3. Open in Excel or Google Sheets\n\n**File Info:**\n- Filename: ${filename}\n- Records: ${fileData.businessReports.length} rows\n- Format: CSV (Excel compatible)\n- Hosted on: Vercel CDN`,
+            color: 0x00ff00,
+            fields: [
+              {
+                name: '📁 File Type',
+                value: 'CSV (Business Reports)',
+                inline: true
+              },
+              {
+                name: '📈 Records',
+                value: `${fileData.businessReports.length} rows`,
+                inline: true
+              },
+              {
+                name: '📅 Upload Time',
+                value: new Date().toLocaleString(),
+                inline: true
+              },
+              {
+                name: '🌐 Hosted On',
+                value: 'Vercel CDN',
+                inline: true
+              }
+            ],
+            timestamp: new Date().toISOString(),
+            footer: {
+              text: 'Click the link above to download your CSV file!'
             }
-          ],
-          timestamp: new Date().toISOString()
-        }]
-      };
-      
-      // Send the CSV file as attachment
-      await sendFileToDiscord(csvBuffer, 'business_reports.csv', 'text/csv', payload);
+          }]
+        };
+        
+        await fetch(DISCORD_WEBHOOK_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        console.log('✅ Business Reports Discord notification sent');
+        
+      } catch (blobError) {
+        console.error('❌ Error uploading to Vercel Blob:', blobError.message);
+        
+        // Fallback: Send as text chunks if Blob upload fails
+        await sendFallbackToDiscord(fileData.businessReports, 'Business Reports', 'business_reports');
+      }
     }
 
-    // Send Search Term Reports file - ORIGINAL EXCEL
+    // Send Search Term Reports file to Vercel Blob
     if (fileData.searchTermReports && fileData.searchTermReports.length > 0) {
-      console.log('🔍 Sending Search Term Reports Excel to Discord...');
+      console.log('🔍 Uploading Search Term Reports to Vercel Blob...');
       
-      // Convert data back to CSV format (Excel data as CSV)
+      // Convert data back to CSV format
       const csvContent = convertToCSV(fileData.searchTermReports);
-      const csvBuffer = Buffer.from(csvContent, 'utf-8');
+      const filename = `search_term_reports_${Date.now()}.csv`;
       
-      // Send CSV file to Discord
-      const payload = {
-        username: 'PPC Dashboard Monitor',
-        avatar_url: 'https://cdn-icons-png.flaticon.com/512/3081/3081559.png',
-        embeds: [{
-          title: '🔍 Search Term Reports - CSV File',
-          description: 'Original Excel file converted to CSV for Discord',
-          color: 0xff9900,
-          fields: [
-            {
-              name: '📁 File Type',
-              value: 'CSV (Search Term Reports)',
-              inline: true
-            },
-            {
-              name: '📈 Records',
-              value: `${fileData.searchTermReports.length} rows`,
-              inline: true
-            },
-            {
-              name: '📅 Upload Time',
-              value: new Date().toLocaleString(),
-              inline: true
+      try {
+        // Upload to Vercel Blob
+        const { url } = await put(filename, csvContent, { 
+          access: 'public',
+          token: config.vercel.blobToken
+        });
+        
+        console.log('✅ Search Term Reports uploaded to Vercel Blob:', url);
+        
+        // Send Discord notification with download link
+        const payload = {
+          username: 'PPC Dashboard Monitor',
+          avatar_url: 'https://cdn-icons-png.flaticon.com/512/3081/3081559.png',
+          embeds: [{
+            title: '🔍 Search Term Reports - Ready for Download!',
+            description: `**📥 Download your CSV file:**\n\n**Direct Download Link:**\n${url}\n\n**Instructions:**\n1. Click the download link above\n2. Save the file with .csv extension\n3. Open in Excel or Google Sheets\n\n**File Info:**\n- Filename: ${filename}\n- Records: ${fileData.searchTermReports.length} rows\n- Format: CSV (Excel compatible)\n- Hosted on: Vercel CDN`,
+            color: 0x00ff00,
+            fields: [
+              {
+                name: '📁 File Type',
+                value: 'CSV (Search Term Reports)',
+                inline: true
+              },
+              {
+                name: '📈 Records',
+                value: `${fileData.searchTermReports.length} rows`,
+                inline: true
+              },
+              {
+                name: '📅 Upload Time',
+                value: new Date().toLocaleString(),
+                inline: true
+              },
+              {
+                name: '🌐 Hosted On',
+                value: 'Vercel CDN',
+                inline: true
+              }
+            ],
+            timestamp: new Date().toISOString(),
+            footer: {
+              text: 'Click the link above to download your CSV file!'
             }
-          ],
-          timestamp: new Date().toISOString()
-        }]
-      };
-      
-      // Send the CSV file as attachment
-      await sendFileToDiscord(csvBuffer, 'search_term_reports.csv', 'text/csv', payload);
+          }]
+        };
+        
+        await fetch(DISCORD_WEBHOOK_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        console.log('✅ Search Term Reports Discord notification sent');
+        
+      } catch (blobError) {
+        console.error('❌ Error uploading to Vercel Blob:', blobError.message);
+        
+        // Fallback: Send as text chunks if Blob upload fails
+        await sendFallbackToDiscord(fileData.searchTermReports, 'Search Term Reports', 'search_term_reports');
+      }
     }
 
-    console.log('✅ All original files sent to Discord successfully!');
+    console.log('✅ All files processed successfully!');
     
   } catch (error) {
-    console.error('❌ Error sending original files to Discord:', error.message);
+    console.error('❌ Error in sendFilesToDiscord:', error.message);
   }
 }
 
@@ -336,6 +399,53 @@ function splitIntoChunks(text, maxLength) {
   }
   
   return chunks;
+}
+
+// Fallback function to send data as text chunks if Vercel Blob fails
+async function sendFallbackToDiscord(data, title, type) {
+  try {
+    console.log(`📤 Sending ${title} as fallback text chunks...`);
+    
+    // Split large files into chunks (Discord has 4000 character limit)
+    const jsonData = JSON.stringify(data, null, 2);
+    const chunks = splitIntoChunks(jsonData, 3500); // Leave room for formatting
+    
+    for (let i = 0; i < chunks.length; i++) {
+      const chunkEmbed = {
+        title: `📊 ${title} - Fallback Data (Part ${i + 1}/${chunks.length})`,
+        description: '```json\n' + chunks[i] + '\n```',
+        color: 0xff9900, // Orange color for fallback
+        timestamp: new Date().toISOString(),
+        footer: {
+          text: `Part ${i + 1} of ${chunks.length} - Vercel Blob upload failed, sending as text`
+        }
+      };
+
+      const payload = {
+        embeds: [chunkEmbed],
+        username: 'PPC Dashboard Monitor',
+        avatar_url: 'https://cdn-icons-png.flaticon.com/512/3081/3081559.png'
+      };
+
+      await fetch(DISCORD_WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      // Small delay between messages to avoid rate limiting
+      if (i < chunks.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+    
+    console.log(`✅ ${title} fallback data sent successfully`);
+    
+  } catch (error) {
+    console.error(`❌ Error sending ${title} fallback data:`, error.message);
+  }
 }
 
 // CORS configuration
@@ -736,31 +846,18 @@ app.get('/api/health', (req, res) => {
   res.json(healthData);
 });
 
-// File download endpoint
-app.get('/api/download/:fileId', (req, res) => {
-  const { fileId } = req.params;
-  
-  if (!global.tempFiles || !global.tempFiles[fileId]) {
-    return res.status(404).json({ 
-      success: false, 
-      error: 'File not found or expired' 
-    });
-  }
-  
-  const file = global.tempFiles[fileId];
-  
-  // Set headers for file download
-  res.setHeader('Content-Type', file.contentType);
-  res.setHeader('Content-Disposition', `attachment; filename="${file.filename}"`);
-  res.setHeader('Content-Length', Buffer.byteLength(file.content, 'utf8'));
-  
-  // Send the file content
-  res.send(file.content);
-  
-  // Clean up the file after download
-  delete global.tempFiles[fileId];
-  
-  console.log(`📥 File downloaded: ${file.filename} (${fileId})`);
+// Vercel Blob file info endpoint (for debugging)
+app.get('/api/blob-info', (req, res) => {
+  res.json({
+    status: 'Vercel Blob Integration Active',
+    message: 'Files are now uploaded to Vercel Blob and accessible via direct URLs',
+    timestamp: new Date().toISOString(),
+    config: {
+      hasBlobToken: !!config.vercel.blobToken,
+      blobTokenPreview: config.vercel.blobToken ? config.vercel.blobToken.substring(0, 20) + '...' : 'None',
+      hasDiscordWebhook: !!DISCORD_WEBHOOK_URL
+    }
+  });
 });
 
 // Error handling middleware (must be after all routes)
@@ -802,10 +899,11 @@ const server = app.listen(PORT, () => {
   console.log(`🤖 Gemini API Key: ${config.gemini.apiKey ? '✅ Present' : '❌ Missing'}`);
   console.log(`🔑 API Key preview: ${config.gemini.apiKey ? config.gemini.apiKey.substring(0, 10) + '...' : 'None'}`);
   console.log(`🔐 Discord Webhook: ${DISCORD_WEBHOOK_URL ? '✅ Configured' : '❌ Not configured'}`);
+  console.log(`☁️ Vercel Blob: ${config.vercel.blobToken ? '✅ Configured' : '❌ Not configured'}`);
   console.log('🚀 ========================================');
   console.log('📡 Available endpoints:');
   console.log('   GET  /api/health');
-  console.log('   GET  /api/download/:fileId');
+  console.log('   GET  /api/blob-info');
   console.log('   POST /api/ai-audit');
   console.log('   POST /api/test-discord');
   console.log('🚀 ========================================');

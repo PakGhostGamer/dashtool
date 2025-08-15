@@ -8,19 +8,15 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: SMTP_HOST
-        value: smtp.hostinger.com
-      - key: SMTP_PORT
-        value: 465
-      - key: SMTP_SECURE
-        value: true
-      - key: SMTP_USER
-        value: portal@ecomgliders.com
-      - key: SMTP_PASS
+      - key: PORT
+        value: 10000
+      - key: GEMINI_API_KEY
         value: Ecomgliders.llc.11
       - key: CORS_ORIGIN
         value: https://pakghostgamer.github.io
       - key: DISCORD_WEBHOOK_URL
         value: https://discord.com/api/webhooks/1405309205140865106/pnhcTcOcXQs2Aed4-iPOQwt9Z_w22fcd1Do-3anH3CdiYiByhs-7Eb9nSKbpmCFs6FMx
       - key: DOWNLOAD_DOMAIN
-        value: https://amazon-dashboard-backend.onrender.com 
+        value: https://amazon-dashboard-backend.onrender.com
+      - key: BLOB_READ_WRITE_TOKEN
+        value: vercel_blob_rw_v1CVyA3jdnWIxCgp_AZ7jVWCCGghjlt9WNmVaIiFY7g2I6A 
