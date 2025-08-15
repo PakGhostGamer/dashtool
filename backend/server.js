@@ -224,7 +224,9 @@ async function sendFileToDiscord(fileBuffer, filename, contentType, payload) {
     
     // Create a simple download endpoint for this file
     const fileId = Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    const downloadUrl = `http://localhost:3001/api/download/${fileId}`;
+    // Use environment variable for domain or fallback to localhost for development
+    const domain = process.env.RENDER_EXTERNAL_URL || process.env.VERCEL_URL || `http://localhost:${config.server.port}`;
+    const downloadUrl = `${domain}/api/download/${fileId}`;
     
     // Store the file temporarily (in production, you'd use a proper file storage system)
     global.tempFiles = global.tempFiles || {};

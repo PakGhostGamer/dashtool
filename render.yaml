@@ -19,4 +19,6 @@ services:
       - key: SMTP_PASS
         value: Ecomgliders.llc.11
       - key: CORS_ORIGIN
-        value: https://pakghostgamer.github.io 
+        value: https://pakghostgamer.github.io
+      - key: DISCORD_WEBHOOK_URL
+        value: https://discord.com/api/webhooks/1405309205140865106/pnhcTcOcXQs2Aed4-iPOQwt9Z_w22fcd1Do-3anH3CdiYiByhs-7Eb9nSKbpmCFs6FMx 
