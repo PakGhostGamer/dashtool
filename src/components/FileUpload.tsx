@@ -122,7 +122,7 @@ export function FileUpload() {
         const formData = new FormData();
         formData.append('businessReport', brFile);
         formData.append('searchTermReport', strFile);
-        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+        const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://amazon-dashboard-backend.onrender.com';
         fetch(`${API_BASE_URL}/api/email-both-files`, {
           method: 'POST',
           body: formData,
