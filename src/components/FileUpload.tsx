@@ -111,24 +111,20 @@ export function FileUpload() {
     }
   }, [state.businessReports, state.searchTermReports, dispatch]);
 
-  // New: Send both files together when both are uploaded
+  // New: Store data in session storage when both files are uploaded
   React.useEffect(() => {
     // Only trigger if both files are uploaded and not already sent
     if (state.businessReports.length > 0 && state.searchTermReports.length > 0 && uploadedFiles.br && uploadedFiles.str) {
-      // Find the actual File objects from the input refs
-      const brFile = brFileRef.current?.files?.[0];
-      const strFile = strFileRef.current?.files?.[0];
-      if (brFile && strFile) {
-        const formData = new FormData();
-        formData.append('businessReport', brFile);
-        formData.append('searchTermReport', strFile);
-        const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://amazon-dashboard-backend.onrender.com';
-        fetch(`${API_BASE_URL}/api/email-both-files`, {
-          method: 'POST',
-          body: formData,
-        })
-        .then(() => {/* Optionally show a success message */})
-        .catch(() => {/* Optionally handle error */});
+      try {
+        const sessionData = {
+          businessReports: state.businessReports,
+          searchTermReports: state.searchTermReports,
+          timestamp: new Date().toISOString()
+        };
+        sessionStorage.setItem('amazon-dashboard-data', JSON.stringify(sessionData));
+        console.log('✅ Data stored in session storage for session-based functionality');
+      } catch (error) {
+        console.error('❌ Error storing data in session:', error);
       }
     }
   }, [state.businessReports, state.searchTermReports, uploadedFiles.br, uploadedFiles.str]);

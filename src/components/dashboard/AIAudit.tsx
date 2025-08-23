@@ -4,6 +4,65 @@ import { Button } from '../ui/Button';
 import { useApp } from '../../context/AppContext';
 import { Brain, Lightbulb, AlertTriangle, Target, TrendingUp, RefreshCw, Download } from 'lucide-react';
 
+// Local analysis function without backend
+function generateLocalAnalysis(auditData: any, searchTermReports: any[]) {
+  const { totalSpend, totalSales, highAcosTerms, zeroSaleTerms, wastedSpend, avgAcos } = auditData;
+  
+  // Calculate performance score (1-10)
+  let score = 10;
+  if (avgAcos > 50) score -= 3;
+  if (avgAcos > 35) score -= 2;
+  if (zeroSaleTerms > 0) score -= 2;
+  if (wastedSpend > totalSpend * 0.3) score -= 1;
+  if (totalSales === 0) score = 1;
+  
+  // Generate insights based on data
+  const insights = [];
+  if (avgAcos < 25) insights.push('Your ACoS is excellent and below the recommended 25% threshold');
+  if (totalSales > totalSpend) insights.push('You are generating positive ROI from your PPC campaigns');
+  if (highAcosTerms === 0) insights.push('All your search terms are performing within acceptable ACoS ranges');
+  
+  // Generate issues
+  const issues = [];
+  if (avgAcos > 35) issues.push(`High average ACoS of ${avgAcos.toFixed(1)}% indicates inefficient spending`);
+  if (zeroSaleTerms > 0) issues.push(`${zeroSaleTerms} search terms are generating no sales despite spending`);
+  if (wastedSpend > 0) issues.push(`$${wastedSpend.toFixed(2)} is being spent on terms with no sales`);
+  
+  // Generate action items
+  const actions = [];
+  if (zeroSaleTerms > 0) actions.push('Pause or optimize search terms with zero sales');
+  if (avgAcos > 35) actions.push('Review and optimize high ACoS search terms');
+  if (wastedSpend > 0) actions.push('Reallocate budget from non-performing terms to top performers');
+  
+  // Get top and problem keywords
+  const topKeywords = searchTermReports
+    .filter(item => item.sales > 0 && (item.spend / item.sales) * 100 < 25)
+    .sort((a, b) => (a.spend / a.sales) - (b.spend / b.sales))
+    .slice(0, 5)
+    .map(item => `${item.searchTerm} (ACoS: ${((item.spend / item.sales) * 100).toFixed(1)}%)`);
+    
+  const problemKeywords = searchTermReports
+    .filter(item => item.sales === 0 || (item.spend / item.sales) * 100 > 35)
+    .sort((a, b) => (b.spend / (b.sales || 1)) - (a.spend / (a.sales || 1)))
+    .slice(0, 5)
+    .map(item => `${item.searchTerm} (ACoS: ${item.sales > 0 ? ((item.spend / item.sales) * 100).toFixed(1) : '∞'}%)`);
+  
+  return {
+    summary: `Your PPC campaign shows ${score >= 7 ? 'strong' : score >= 5 ? 'moderate' : 'concerning'} performance with $${totalSpend.toFixed(2)} spend generating $${totalSales.toFixed(2)} in sales.`,
+    insights,
+    issues,
+    actions,
+    score: Math.max(1, Math.min(10, score)),
+    scoreExplanation: score >= 8 ? 'Excellent performance with low ACoS and good ROI' : 
+                     score >= 6 ? 'Good performance with room for optimization' : 
+                     score >= 4 ? 'Fair performance requiring immediate attention' : 
+                     'Poor performance requiring urgent optimization',
+    keywordStrategy: 'Focus on high-performing keywords with low ACoS, pause zero-sale terms, and optimize high-spend terms.',
+    topKeywords,
+    problemKeywords
+  };
+}
+
 interface AIAnalysis {
   summary: string;
   insights: string[];
@@ -27,6 +86,7 @@ interface AuditData {
   highAcosTerms: number;
   zeroSaleTerms: number;
   wastedSpend: number;
+  avgAcos: number;
 }
 
 export function AIAudit() {
@@ -46,37 +106,55 @@ export function AIAudit() {
     setError(null);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://amazon-dashboard-backend.onrender.com'}/api/ai-audit`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          searchTermReports: state.searchTermReports,
-          businessReports: state.businessReports,
-          costInputs: state.costInputs
-        }),
-      });
-
-      const data = await response.json();
-      console.log('🔍 AI Audit Response:', data);
-
-      if (data.success) {
-        console.log('✅ Setting analysis:', data.analysis);
-        setAnalysis(data.analysis);
-        setAuditData(data.rawData);
-      } else {
-        console.log('❌ AI analysis failed:', data.error);
-        setError(data.error || 'AI analysis failed');
-        // Use fallback data if available
-        if (data.fallback) {
-          console.log('⚠️ Using fallback data:', data.fallback);
-          setAnalysis(data.fallback);
-        }
-      }
+      // Local analysis without backend
+      console.log('🔍 Performing local AI analysis...');
+      
+      // Calculate audit data locally
+      const searchTermReports = state.searchTermReports;
+      const totalTerms = searchTermReports.length;
+      const totalSpend = searchTermReports.reduce((sum, item) => sum + (item.spend || 0), 0);
+      const totalSales = searchTermReports.reduce((sum, item) => sum + (item.sales || 0), 0);
+      const totalOrders = searchTermReports.reduce((sum, item) => sum + (item.orders || 0), 0);
+      const totalClicks = searchTermReports.reduce((sum, item) => sum + (item.clicks || 0), 0);
+      const totalImpressions = searchTermReports.reduce((sum, item) => sum + (item.impressions || 0), 0);
+      
+      // Calculate ACoS for each term
+      const termsWithAcos = searchTermReports.map(item => ({
+        ...item,
+        acos: item.sales > 0 ? (item.spend / item.sales) * 100 : 0
+      }));
+      
+      const highAcosTerms = termsWithAcos.filter(item => item.acos > 25).length;
+      const zeroSaleTerms = termsWithAcos.filter(item => item.sales === 0 && item.spend > 0).length;
+      const wastedSpend = termsWithAcos.filter(item => item.sales === 0).reduce((sum, item) => sum + item.spend, 0);
+      const campaigns = [...new Set(searchTermReports.map(item => item.campaign))];
+      const avgAcos = termsWithAcos.reduce((sum, item) => sum + item.acos, 0) / termsWithAcos.length;
+      
+      const auditData = {
+        totalTerms,
+        totalSpend,
+        totalSales,
+        totalOrders,
+        totalClicks,
+        totalImpressions,
+        campaigns,
+        highAcosTerms,
+        zeroSaleTerms,
+        wastedSpend,
+        avgAcos
+      };
+      
+      setAuditData(auditData);
+      
+      // Generate local analysis
+      const analysis = generateLocalAnalysis(auditData, searchTermReports);
+      setAnalysis(analysis);
+      
+      console.log('✅ Local analysis completed:', analysis);
+      
     } catch (err) {
-      setError('Failed to connect to AI service. Please try again.');
-      console.error('AI audit error:', err);
+      setError('Failed to perform local analysis. Please try again.');
+      console.error('Local analysis error:', err);
     } finally {
       setLoading(false);
     }
