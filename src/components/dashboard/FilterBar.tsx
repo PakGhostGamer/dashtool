@@ -83,46 +83,50 @@ export function FilterBar() {
       { id: 'asin', label: 'ASIN View' },
       { id: 'ppcaudit', label: 'PPC Audit' },
     ];
-    // Create one very long page that fits all content vertically
+    // First, capture all sections from the current view without switching tabs
     const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getWidth();
     
     // Track current Y position for placing content
     let currentY = 20; // Start with 20mm margin from top
     let totalHeight = 20; // Track total height needed
-    for (let i = 0; i < tabOrder.length; i++) {
-      const { id, label } = tabOrder[i];
-      // Switch tab
-      window.dispatchEvent(new CustomEvent('dashboard-export-tab', { detail: id }));
-      // Wait for content to render
-      await wait(500);
-      // Wait for container to be visible
-      let tries = 0;
-      let containerElem = document.querySelector('.container.mx-auto');
-      while ((!containerElem || (containerElem as HTMLElement).offsetHeight === 0) && tries < 10) {
-        await wait(200);
-        containerElem = document.querySelector('.container.mx-auto');
-        tries++;
-      }
-      console.log('PDF Export: containerElem', containerElem);
-      // Capture each section individually with its full height
-      let targetElem;
+    
+    // Capture all sections from the current dashboard view
+    const sections = [
+      { label: 'Overall Account', selector: '.overview-section, #overview-content, .overall-section' },
+      { label: 'PPC View', selector: '.ppc-section, #ppc-content, .ppc-view-section' },
+      { label: 'Organic View', selector: '.organic-section, #organic-content, .organic-view-section' },
+      { label: 'ASIN View', selector: '.asin-section, #asin-content, .asin-view-section' },
+      { label: 'PPC Audit', selector: '.ppc-audit-section, #ppc-audit-content, .ppc-audit-section' }
+    ];
+    
+    for (let i = 0; i < sections.length; i++) {
+      const { label, selector } = sections[i];
+      // Wait a bit for any animations or lazy loading to complete
+      await wait(200);
+      // Find the section element using the selector
+      let targetElem = document.querySelector(selector);
       
-      // Find the specific section element based on the label
-      if (label === 'Overview') {
-        targetElem = document.querySelector('#overview-content') || document.querySelector('.overview-section');
-      } else if (label === 'ASIN Performance') {
-        targetElem = document.querySelector('#asin-content') || document.querySelector('.asin-section');
-      } else if (label === 'PPC Audit') {
-        targetElem = document.querySelector('#ppc-audit-content') || document.querySelector('.ppc-audit-section');
-      } else if (label === 'AI Audit') {
-        targetElem = document.querySelector('#ai-audit-content') || document.querySelector('.ai-audit-section');
-      } else if (label === 'Organic View') {
-        targetElem = document.querySelector('#organic-content') || document.querySelector('.organic-section');
-      } else {
-        // Fallback to body if section not found
-        targetElem = document.body;
+      if (!targetElem) {
+        console.warn(`Section not found for ${label} with selector: ${selector}`);
+        // Try alternative selectors
+        if (label === 'Overall Account') {
+          targetElem = document.querySelector('.container.mx-auto') || document.querySelector('main');
+        } else if (label === 'PPC View') {
+          targetElem = document.querySelector('[data-tab="ppc"]') || document.querySelector('.ppc-content');
+        } else if (label === 'Organic View') {
+          targetElem = document.querySelector('[data-tab="organic"]') || document.querySelector('.organic-content');
+        } else if (label === 'ASIN View') {
+          targetElem = document.querySelector('[data-tab="asin"]') || document.querySelector('.asin-content');
+        } else if (label === 'PPC Audit') {
+          targetElem = document.querySelector('[data-tab="ppcaudit"]') || document.querySelector('.ppc-audit-content');
+        }
+        
+        // If still no target, skip this section
+        if (!targetElem) {
+          console.warn(`Skipping ${label} - no element found`);
+          continue;
+        }
       }
       
       if (!targetElem) {
@@ -130,19 +134,10 @@ export function FilterBar() {
         targetElem = document.body;
       }
       
-      // Ensure the section is fully visible and expanded
-      if (targetElem !== document.body) {
-        // Scroll the section into view
+      // Ensure the section is visible and scroll into view
+      if (targetElem && targetElem !== document.body) {
         targetElem.scrollIntoView({ behavior: 'instant', block: 'start' });
-        
-        // Wait a bit for any animations or lazy loading to complete
         await wait(300);
-        
-        // Force any hidden content to be visible
-        const style = window.getComputedStyle(targetElem);
-        if (style.display === 'none') {
-          console.warn(`Section ${label} is hidden, attempting to make visible`);
-        }
       }
       
       // Capture the specific section with full height
