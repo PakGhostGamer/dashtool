@@ -483,6 +483,29 @@ export function ASINView() {
         </Card>
       </div>
 
+      {/* Debug Information */}
+      <Card className="bg-gray-50 border-gray-200">
+        <CardContent className="p-4">
+          <div className="text-sm text-gray-700">
+            <div className="font-semibold mb-2">PPC Data Estimation Debug:</div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+              <div>
+                <span className="font-medium">Total Business Sales:</span> {formatCurrency(state.businessReports.reduce((sum, item) => sum + item.sales, 0))}
+              </div>
+              <div>
+                <span className="font-medium">Total PPC Sales:</span> {formatCurrency(state.searchTermReports.reduce((sum, item) => sum + item.sales, 0))}
+              </div>
+              <div>
+                <span className="font-medium">Total PPC Spend:</span> {formatCurrency(state.searchTermReports.reduce((sum, item) => sum + item.spend, 0))}
+              </div>
+              <div>
+                <span className="font-medium">Current SKU Share:</span> {((totalSales / (state.businessReports.reduce((sum, item) => sum + item.sales, 0) || 1)) * 100).toFixed(1)}%
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* All ASINs Performance Table */}
       <Card>
         <CardHeader>
@@ -502,12 +525,14 @@ export function ASINView() {
                 const avgSalePrice = totalUnits > 0 ? totalSales / totalUnits : 0;
                 const conversionRate = totalSessions > 0 ? (totalUnits / totalSessions) * 100 : 0;
                 
-                // Estimate PPC data proportionally
-                const ppcData = state.searchTermReports.filter(str => 
-                  asinData.some(br => br.date === str.date)
-                );
-                const ppcSales = ppcData.reduce((sum, str) => sum + str.sales, 0);
-                const ppcSpend = ppcData.reduce((sum, str) => sum + str.spend, 0);
+                // Estimate PPC data proportionally using the same logic as the main calculations
+                const totalBusinessSales = state.businessReports.reduce((sum, item) => sum + item.sales, 0);
+                const totalPpcSales = state.searchTermReports.reduce((sum, item) => sum + item.sales, 0);
+                const totalPpcSpend = state.searchTermReports.reduce((sum, item) => sum + item.spend, 0);
+                
+                const skuSalesShare = totalBusinessSales > 0 ? totalSales / totalBusinessSales : 0;
+                const ppcSales = totalPpcSales * skuSalesShare;
+                const ppcSpend = totalPpcSpend * skuSalesShare;
                 const acos = ppcSales > 0 ? (ppcSpend / ppcSales) * 100 : 0;
                 
                 return {
