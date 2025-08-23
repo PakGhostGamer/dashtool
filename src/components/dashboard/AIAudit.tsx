@@ -4,6 +4,8 @@ import { Button } from '../ui/Button';
 import { useApp } from '../../context/AppContext';
 import { Brain, Lightbulb, AlertTriangle, Target, TrendingUp, RefreshCw, Download } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 // Real AI analysis using Google Gemini
 async function generateGeminiAnalysis(auditData: any, searchTermReports: any[]) {
@@ -389,6 +391,7 @@ AUDIT DATA SUMMARY
               </Button>
               <Button
                 onClick={downloadReport}
+                data-download-btn
                 className="bg-green-600 hover:bg-green-700 text-white"
               >
                 <Download className="w-4 h-4 mr-2" />
