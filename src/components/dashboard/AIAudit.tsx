@@ -55,7 +55,7 @@ Please provide a comprehensive analysis in this exact JSON format:
   "scoreExplanation": "Detailed explanation of the score",
   "keywordStrategy": "Specific keyword optimization strategy",
   "topKeywords": ["Top 5 performing keywords with ACoS"],
-  "problemKeywords": ["Top 5 problem keywords with ACoS"]
+  "problemKeywords": ["Top 5 problem keywords - for zero-sale terms use 'No Sales - $X spent', for high ACoS use 'ACoS: X%'"]
 }
 
 Focus on providing intelligent, data-driven insights that would help optimize this PPC campaign. Be specific and actionable.`;
@@ -69,6 +69,19 @@ Focus on providing intelligent, data-driven insights that would help optimize th
     const aiAnalysis = JSON.parse(text);
     
     // Validate and format the response
+    const validatedProblemKeywords = Array.isArray(aiAnalysis.problemKeywords) 
+      ? aiAnalysis.problemKeywords.map((keyword: any) => {
+          // Ensure proper formatting for problem keywords
+          if (typeof keyword === 'string') {
+            if (keyword.includes('∞') || keyword.includes('infinity')) {
+              return keyword.replace(/∞|infinity/gi, 'No Sales');
+            }
+            return keyword;
+          }
+          return 'Invalid keyword data';
+        })
+      : ['AI analysis in progress'];
+    
     return {
       summary: aiAnalysis.summary || 'AI analysis generated successfully',
       insights: Array.isArray(aiAnalysis.insights) ? aiAnalysis.insights : ['AI insights generated'],
@@ -78,7 +91,7 @@ Focus on providing intelligent, data-driven insights that would help optimize th
       scoreExplanation: aiAnalysis.scoreExplanation || 'AI-generated performance explanation',
       keywordStrategy: aiAnalysis.keywordStrategy || 'AI-generated keyword strategy',
       topKeywords: Array.isArray(aiAnalysis.topKeywords) ? aiAnalysis.topKeywords : ['AI analysis in progress'],
-      problemKeywords: Array.isArray(aiAnalysis.problemKeywords) ? aiAnalysis.problemKeywords : ['AI analysis in progress']
+      problemKeywords: validatedProblemKeywords
     };
     
   } catch (error) {
@@ -129,7 +142,13 @@ function generateLocalAnalysis(auditData: any, searchTermReports: any[]) {
     .filter(item => item.sales === 0 || (item.spend / item.sales) * 100 > 35)
     .sort((a, b) => (b.spend / (b.sales || 1)) - (a.spend / (a.sales || 1)))
     .slice(0, 5)
-    .map(item => `${item.searchTerm} (ACoS: ${item.sales > 0 ? ((item.spend / item.sales) * 100).toFixed(1) : '∞'}%)`);
+    .map(item => {
+      if (item.sales === 0) {
+        return `${item.searchTerm} (No Sales - $${item.spend.toFixed(2)} spent)`;
+      } else {
+        return `${item.searchTerm} (ACoS: ${((item.spend / item.sales) * 100).toFixed(1)}%)`;
+      }
+    });
   
   return {
     summary: `Your PPC campaign shows ${score >= 7 ? 'strong' : score >= 5 ? 'moderate' : 'concerning'} performance with $${totalSpend.toFixed(2)} spend generating $${totalSales.toFixed(2)} in sales.`,
