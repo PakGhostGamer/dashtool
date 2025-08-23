@@ -121,6 +121,7 @@ export function FilterBar() {
       // Calculate proper scaling to fit content
       const imgWidth = pageWidth - 20; // 10mm margin on each side
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
       // Create one long page per section instead of splitting across multiple pages
       if (i > 0) pdf.addPage();
       
@@ -128,11 +129,6 @@ export function FilterBar() {
       pdf.setFontSize(16);
       pdf.setFont('helvetica', 'bold');
       pdf.text(label, 10, 15);
-      
-      // Add the entire content as one long image
-      // Scale the image to fit the page width while maintaining aspect ratio
-      const imgWidth = pageWidth - 20; // 10mm margin on each side
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
       console.log(`PDF Export: Adding ${label} - Image dimensions: ${imgWidth.toFixed(1)}mm x ${imgHeight.toFixed(1)}mm`);
       
