@@ -83,7 +83,7 @@ export function FilterBar() {
       { id: 'asin', label: 'ASIN View' },
       { id: 'ppcaudit', label: 'PPC Audit' },
     ];
-    // Use A4 landscape for better fit
+    // We'll create custom page sizes for each section to avoid page breaks
     const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
@@ -161,21 +161,30 @@ export function FilterBar() {
       const imgWidth = pageWidth - 20; // 10mm margin on each side
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
-      // Create one long page per section instead of splitting across multiple pages
-      if (i > 0) pdf.addPage();
+      // Create a custom page size that fits the entire content
+      const requiredHeight = imgHeight + 40; // Add 40mm for margins and title
+      
+      console.log(`PDF Export: Adding ${label} - Section: ${targetElem.tagName}${targetElem.id ? '#' + targetElem.id : ''}${targetElem.className ? '.' + targetElem.className.split(' ').join('.') : ''}`);
+      console.log(`PDF Export: Section dimensions - Width: ${targetElem.scrollWidth || targetElem.offsetWidth}px, Height: ${targetElem.scrollHeight || targetElem.offsetHeight}px`);
+      console.log(`PDF Export: Canvas dimensions - Width: ${canvas.width}px, Height: ${canvas.height}px`);
+      console.log(`PDF Export: Required page height: ${requiredHeight.toFixed(1)}mm (standard A4: ${pageHeight.toFixed(1)}mm)`);
+      
+      // Add a new page with custom dimensions for this section
+      if (i > 0) {
+        // Create a custom page size that fits the content
+        pdf.addPage([pageWidth, requiredHeight]);
+      } else {
+        // For the first page, resize the existing page
+        pdf.setPage(1);
+        pdf.internal.pageSize.setHeight(requiredHeight);
+      }
       
       // Add title
       pdf.setFontSize(16);
       pdf.setFont('helvetica', 'bold');
       pdf.text(label, 10, 15);
       
-      console.log(`PDF Export: Adding ${label} - Section: ${targetElem.tagName}${targetElem.id ? '#' + targetElem.id : ''}${targetElem.className ? '.' + targetElem.className.split(' ').join('.') : ''}`);
-      console.log(`PDF Export: Section dimensions - Width: ${targetElem.scrollWidth || targetElem.offsetWidth}px, Height: ${targetElem.scrollHeight || targetElem.offsetHeight}px`);
-      console.log(`PDF Export: Canvas dimensions - Width: ${canvas.width}px, Height: ${canvas.height}px`);
-      console.log(`PDF Export: Final PDF dimensions - Width: ${imgWidth.toFixed(1)}mm x Height: ${imgHeight.toFixed(1)}mm`);
-      
-      // Add the full image - it will create a long page automatically
-      // jsPDF will automatically extend the page height to accommodate the full image
+      // Add the full image - now it will fit perfectly on the custom-sized page
       pdf.addImage(imgData, 'PNG', 10, 25, imgWidth, imgHeight, '', 'FAST');
     }
     pdf.save('dashboard.pdf');
