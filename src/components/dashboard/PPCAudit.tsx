@@ -227,7 +227,7 @@ export function PPCAudit() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) => `${name} (${((percent ?? 0) * 100).toFixed(0)}%)`}
+                  label={false}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
@@ -236,9 +236,49 @@ export function PPCAudit() {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                <Tooltip 
+                  formatter={(value, name, props) => [
+                    <div key="tooltip">
+                      <div className="font-semibold">{props.payload.name}</div>
+                      <div>Spend: {formatCurrency(Number(value))}</div>
+                      <div>Percentage: {((props.payload.percent || 0) * 100).toFixed(1)}%</div>
+                    </div>
+                  ]}
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: '1px solid #ccc',
+                    borderRadius: '8px',
+                    padding: '8px'
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
+            
+            {/* Campaign Legend */}
+            <div className="mt-4">
+              <div className="text-sm font-medium text-gray-700 mb-2">Campaign Legend:</div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                {pieData.slice(0, 10).map((entry, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                    />
+                    <span className="truncate" title={entry.name}>
+                      {entry.name.length > 20 ? entry.name.substring(0, 20) + '...' : entry.name}
+                    </span>
+                    <span className="text-gray-500">
+                      ({((entry.value / pieData.reduce((sum, item) => sum + item.value, 0)) * 100).toFixed(1)}%)
+                    </span>
+                  </div>
+                ))}
+                {pieData.length > 10 && (
+                  <div className="text-gray-500 italic">
+                    +{pieData.length - 10} more campaigns
+                  </div>
+                )}
+              </div>
+            </div>
           </CardContent>
         </Card>
 
