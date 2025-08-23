@@ -102,9 +102,46 @@ export function FilterBar() {
         tries++;
       }
       console.log('PDF Export: containerElem', containerElem);
-      // DEBUG: Try capturing document.body instead of containerElem
-      const targetElem = document.body;
-      // Capture content with better quality and full height
+      // Capture each section individually with its full height
+      let targetElem;
+      
+      // Find the specific section element based on the label
+      if (label === 'Overview') {
+        targetElem = document.querySelector('#overview-content') || document.querySelector('.overview-section');
+      } else if (label === 'ASIN Performance') {
+        targetElem = document.querySelector('#asin-content') || document.querySelector('.asin-section');
+      } else if (label === 'PPC Audit') {
+        targetElem = document.querySelector('#ppc-audit-content') || document.querySelector('.ppc-audit-section');
+      } else if (label === 'AI Audit') {
+        targetElem = document.querySelector('#ai-audit-content') || document.querySelector('.ai-audit-section');
+      } else if (label === 'Organic View') {
+        targetElem = document.querySelector('#organic-content') || document.querySelector('.organic-section');
+      } else {
+        // Fallback to body if section not found
+        targetElem = document.body;
+      }
+      
+      if (!targetElem) {
+        console.warn(`Section not found for ${label}, using body as fallback`);
+        targetElem = document.body;
+      }
+      
+      // Ensure the section is fully visible and expanded
+      if (targetElem !== document.body) {
+        // Scroll the section into view
+        targetElem.scrollIntoView({ behavior: 'instant', block: 'start' });
+        
+        // Wait a bit for any animations or lazy loading to complete
+        await wait(300);
+        
+        // Force any hidden content to be visible
+        const style = window.getComputedStyle(targetElem);
+        if (style.display === 'none') {
+          console.warn(`Section ${label} is hidden, attempting to make visible`);
+        }
+      }
+      
+      // Capture the specific section with full height
       const canvas = await html2canvas(targetElem as HTMLElement, { 
         scale: 1.5, // Higher quality
         useCORS: true,
@@ -112,10 +149,12 @@ export function FilterBar() {
         backgroundColor: '#fff',
         scrollX: 0,
         scrollY: 0,
-        windowWidth: document.documentElement.scrollWidth,
-        windowHeight: document.documentElement.scrollHeight,
-        height: document.documentElement.scrollHeight,
-        width: document.documentElement.scrollWidth
+        // Use the actual element dimensions, not the entire document
+        width: targetElem.scrollWidth || targetElem.offsetWidth,
+        height: targetElem.scrollHeight || targetElem.offsetHeight,
+        // Ensure we capture the full content
+        windowWidth: targetElem.scrollWidth || targetElem.offsetWidth,
+        windowHeight: targetElem.scrollHeight || targetElem.offsetHeight
       });
       const imgData = canvas.toDataURL('image/png');
       // Calculate proper scaling to fit content
@@ -130,7 +169,10 @@ export function FilterBar() {
       pdf.setFont('helvetica', 'bold');
       pdf.text(label, 10, 15);
       
-      console.log(`PDF Export: Adding ${label} - Image dimensions: ${imgWidth.toFixed(1)}mm x ${imgHeight.toFixed(1)}mm`);
+      console.log(`PDF Export: Adding ${label} - Section: ${targetElem.tagName}${targetElem.id ? '#' + targetElem.id : ''}${targetElem.className ? '.' + targetElem.className.split(' ').join('.') : ''}`);
+      console.log(`PDF Export: Section dimensions - Width: ${targetElem.scrollWidth || targetElem.offsetWidth}px, Height: ${targetElem.scrollHeight || targetElem.offsetHeight}px`);
+      console.log(`PDF Export: Canvas dimensions - Width: ${canvas.width}px, Height: ${canvas.height}px`);
+      console.log(`PDF Export: Final PDF dimensions - Width: ${imgWidth.toFixed(1)}mm x Height: ${imgHeight.toFixed(1)}mm`);
       
       // Add the full image - it will create a long page automatically
       // jsPDF will automatically extend the page height to accommodate the full image
