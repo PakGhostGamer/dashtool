@@ -76,116 +76,75 @@ export function FilterBar() {
   // Main export function
   const exportToPDF = async () => {
     document.body.classList.add('pdf-exporting');
-    const tabOrder = [
-      { id: 'overall', label: 'Overall Account' },
-      { id: 'ppc', label: 'PPC View' },
-      { id: 'organic', label: 'Organic View' },
-      { id: 'asin', label: 'ASIN View' },
-      { id: 'ppcaudit', label: 'PPC Audit' },
-    ];
-    // First, capture all sections from the current view without switching tabs
-    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    const pageWidth = pdf.internal.pageSize.getWidth();
     
-    // Track current Y position for placing content
-    let currentY = 20; // Start with 20mm margin from top
-    let totalHeight = 20; // Track total height needed
-    
-    // Capture all sections from the current dashboard view
-    const sections = [
-      { label: 'Overall Account', selector: '.overview-section, #overview-content, .overall-section' },
-      { label: 'PPC View', selector: '.ppc-section, #ppc-content, .ppc-view-section' },
-      { label: 'Organic View', selector: '.organic-section, #organic-content, .organic-view-section' },
-      { label: 'ASIN View', selector: '.asin-section, #asin-content, .asin-view-section' },
-      { label: 'PPC Audit', selector: '.ppc-audit-section, #ppc-audit-content, .ppc-audit-section' }
-    ];
-    
-    for (let i = 0; i < sections.length; i++) {
-      const { label, selector } = sections[i];
-      // Wait a bit for any animations or lazy loading to complete
-      await wait(200);
-      // Find the section element using the selector
-      let targetElem = document.querySelector(selector);
+    try {
+      // Create PDF in portrait mode for better content flow
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pageWidth = pdf.internal.pageSize.getWidth();
       
-      if (!targetElem) {
-        console.warn(`Section not found for ${label} with selector: ${selector}`);
-        // Try alternative selectors
-        if (label === 'Overall Account') {
-          targetElem = document.querySelector('.container.mx-auto') || document.querySelector('main');
-        } else if (label === 'PPC View') {
-          targetElem = document.querySelector('[data-tab="ppc"]') || document.querySelector('.ppc-content');
-        } else if (label === 'Organic View') {
-          targetElem = document.querySelector('[data-tab="organic"]') || document.querySelector('.organic-content');
-        } else if (label === 'ASIN View') {
-          targetElem = document.querySelector('[data-tab="asin"]') || document.querySelector('.asin-content');
-        } else if (label === 'PPC Audit') {
-          targetElem = document.querySelector('[data-tab="ppcaudit"]') || document.querySelector('.ppc-audit-content');
-        }
-        
-        // If still no target, skip this section
-        if (!targetElem) {
-          console.warn(`Skipping ${label} - no element found`);
-          continue;
-        }
+      // Find the main dashboard container
+      const dashboardContainer = document.querySelector('.min-h-screen.bg-gray-50') || 
+                                document.querySelector('.container.mx-auto') || 
+                                document.querySelector('main') ||
+                                document.body;
+      
+      if (!dashboardContainer) {
+        console.error('Dashboard container not found');
+        alert('Could not find dashboard content to export');
+        return;
       }
       
-      if (!targetElem) {
-        console.warn(`Section not found for ${label}, using body as fallback`);
-        targetElem = document.body;
-      }
+      console.log('PDF Export: Found dashboard container:', dashboardContainer);
       
-      // Ensure the section is visible and scroll into view
-      if (targetElem && targetElem !== document.body) {
-        targetElem.scrollIntoView({ behavior: 'instant', block: 'start' });
-        await wait(300);
-      }
-      
-      // Capture the specific section with full height
-      const canvas = await html2canvas(targetElem as HTMLElement, { 
+      // Capture the entire dashboard with full height
+      const canvas = await html2canvas(dashboardContainer as HTMLElement, { 
         scale: 1.5, // Higher quality
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#fff',
         scrollX: 0,
         scrollY: 0,
-        // Use the actual element dimensions, not the entire document
-        width: targetElem.scrollWidth || targetElem.offsetWidth,
-        height: targetElem.scrollHeight || targetElem.offsetHeight,
-        // Ensure we capture the full content
-        windowWidth: targetElem.scrollWidth || targetElem.offsetWidth,
-        windowHeight: targetElem.scrollHeight || targetElem.offsetHeight
+        // Capture the full scrollable content
+        width: dashboardContainer.scrollWidth || dashboardContainer.offsetWidth,
+        height: dashboardContainer.scrollHeight || dashboardContainer.offsetHeight,
+        windowWidth: dashboardContainer.scrollWidth || dashboardContainer.offsetWidth,
+        windowHeight: dashboardContainer.scrollHeight || dashboardContainer.offsetHeight
       });
+      
       const imgData = canvas.toDataURL('image/png');
-      // Calculate proper scaling to fit content
+      
+      // Calculate dimensions to fit the page width
       const imgWidth = pageWidth - 20; // 10mm margin on each side
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
-      console.log(`PDF Export: Adding ${label} - Section: ${targetElem.tagName}${targetElem.id ? '#' + targetElem.id : ''}${targetElem.className ? '.' + targetElem.className.split(' ').join('.') : ''}`);
-      console.log(`PDF Export: Section dimensions - Width: ${targetElem.scrollWidth || targetElem.offsetWidth}px, Height: ${targetElem.scrollHeight || targetElem.offsetHeight}px`);
+      console.log(`PDF Export: Dashboard dimensions - Width: ${dashboardContainer.scrollWidth || dashboardContainer.offsetWidth}px, Height: ${dashboardContainer.scrollHeight || dashboardContainer.offsetHeight}px`);
       console.log(`PDF Export: Canvas dimensions - Width: ${canvas.width}px, Height: ${canvas.height}px`);
-      console.log(`PDF Export: Image dimensions - Width: ${imgWidth.toFixed(1)}mm x Height: ${imgHeight.toFixed(1)}mm`);
+      console.log(`PDF Export: Final PDF dimensions - Width: ${imgWidth.toFixed(1)}mm x Height: ${imgHeight.toFixed(1)}mm`);
       
-      // Add title for this section
-      pdf.setFontSize(16);
+      // Add title
+      pdf.setFontSize(20);
       pdf.setFont('helvetica', 'bold');
-      pdf.text(label, 10, currentY);
+      pdf.text('Amazon Dashboard Report', 10, 15);
       
-      // Add the full image below the title
-      pdf.addImage(imgData, 'PNG', 10, currentY + 10, imgWidth, imgHeight, '', 'FAST');
+      // Add the full dashboard image
+      pdf.addImage(imgData, 'PNG', 10, 25, imgWidth, imgHeight, '', 'FAST');
       
-      // Move to next section position (add some spacing between sections)
-      currentY += imgHeight + 30;
+      // Resize the page to fit the content
+      const requiredHeight = imgHeight + 40; // Image height + margins + title
+      pdf.internal.pageSize.setHeight(requiredHeight);
       
-      // Update total height needed
-      totalHeight = currentY;
+      console.log(`PDF Export: Page resized to height: ${requiredHeight.toFixed(1)}mm`);
+      
+      // Save the PDF
+      pdf.save('amazon-dashboard-report.pdf');
+      console.log('PDF Export: Successfully created dashboard.pdf');
+      
+    } catch (error) {
+      console.error('PDF Export Error:', error);
+      alert('Error creating PDF. Please try again.');
+    } finally {
+      document.body.classList.remove('pdf-exporting');
     }
-    
-    // Resize the page to fit all content
-    console.log(`PDF Export: Total height needed: ${totalHeight.toFixed(1)}mm`);
-    pdf.internal.pageSize.setHeight(totalHeight + 20); // Add 20mm bottom margin
-    
-    pdf.save('dashboard.pdf');
-    document.body.classList.remove('pdf-exporting');
   };
 
   const exportToCSV = () => {
