@@ -226,12 +226,7 @@ AUDIT DATA SUMMARY
     URL.revokeObjectURL(url);
   };
 
-  useEffect(() => {
-    // Auto-generate analysis when component mounts if data is available
-    if (state.searchTermReports.length > 0 && state.businessReports.length > 0) {
-      generateAIAnalysis();
-    }
-  }, [state.searchTermReports, state.businessReports]);
+  // Removed auto-generation - analysis will only run when button is clicked
 
   return (
     <div id="ai-audit-content" className="space-y-6">
@@ -255,23 +250,28 @@ AUDIT DATA SUMMARY
           </div>
           
           {!analysis ? (
-            <Button
-              onClick={generateAIAnalysis}
-              disabled={loading || !state.searchTermReports.length || !state.businessReports.length}
-              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 text-lg"
-            >
-              {loading ? (
-                <>
-                  <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
-                  Analyzing...
-                </>
-              ) : (
-                <>
-                  <Brain className="w-5 h-5 mr-2" />
-                  Generate AI Audit
-                </>
-              )}
-            </Button>
+            <div className="space-y-4">
+              <div className="text-sm text-gray-600 mb-4">
+                💡 Click the button below to start your AI-powered PPC audit analysis
+              </div>
+              <Button
+                onClick={generateAIAnalysis}
+                disabled={loading || !state.searchTermReports.length || !state.businessReports.length}
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 text-lg"
+              >
+                {loading ? (
+                  <>
+                    <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
+                    Analyzing...
+                  </>
+                ) : (
+                  <>
+                    <Brain className="w-5 h-5 mr-2" />
+                    Generate AI Audit
+                  </>
+                )}
+              </Button>
+            </div>
           ) : (
             <div className="flex gap-3">
               <Button
