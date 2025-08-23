@@ -104,63 +104,41 @@ export function FilterBar() {
       console.log('PDF Export: containerElem', containerElem);
       // DEBUG: Try capturing document.body instead of containerElem
       const targetElem = document.body;
-      // Capture content with better quality
+      // Capture content with better quality and full height
       const canvas = await html2canvas(targetElem as HTMLElement, { 
-        scale: 1.2,
+        scale: 1.5, // Higher quality
         useCORS: true,
         allowTaint: true,
-        backgroundColor: '#fff'
+        backgroundColor: '#fff',
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: document.documentElement.scrollWidth,
+        windowHeight: document.documentElement.scrollHeight,
+        height: document.documentElement.scrollHeight,
+        width: document.documentElement.scrollWidth
       });
       const imgData = canvas.toDataURL('image/png');
       // Calculate proper scaling to fit content
       const imgWidth = pageWidth - 20; // 10mm margin on each side
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      // Check if content needs multiple pages
-      const titleHeight = 15; // Space for title
-      const availableHeight = pageHeight - 30; // 15mm margin top and bottom
-      if (imgHeight <= availableHeight) {
-        // Content fits on one page
-        if (i > 0) pdf.addPage();
-        // Add title
-        pdf.setFontSize(16);
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(label, 10, 15);
-        // Add content
-        pdf.addImage(imgData, 'PNG', 10, 25, imgWidth, imgHeight, '', 'FAST');
-      } else {
-        // Content needs multiple pages - split it
-        const pagesNeeded = Math.ceil(imgHeight / availableHeight);
-        for (let page = 0; page < pagesNeeded; page++) {
-          if (i > 0 || page > 0) pdf.addPage();
-          // Add title only on first page of this section
-          if (page === 0) {
-            pdf.setFontSize(16);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text(label, 10, 15);
-          }
-          // Calculate crop area for this page
-          const cropY = page * availableHeight;
-          const cropHeight = Math.min(availableHeight, imgHeight - cropY);
-          // Create a temporary canvas to crop the image
-          const tempCanvas = document.createElement('canvas');
-          const tempCtx = tempCanvas.getContext('2d');
-          tempCanvas.width = canvas.width;
-          tempCanvas.height = cropHeight * (canvas.width / imgWidth);
-          if (tempCtx) {
-            tempCtx.drawImage(
-              canvas,
-              0, cropY * (canvas.width / imgWidth), // source x, y
-              canvas.width, tempCanvas.height, // source width, height
-              0, 0, // destination x, y
-              tempCanvas.width, tempCanvas.height // destination width, height
-            );
-          }
-          const croppedImgData = tempCanvas.toDataURL('image/png');
-          // Add cropped content
-          const yOffset = page === 0 ? 25 : 15; // Account for title on first page
-          pdf.addImage(croppedImgData, 'PNG', 10, yOffset, imgWidth, cropHeight, '', 'FAST');
-        }
-      }
+      // Create one long page per section instead of splitting across multiple pages
+      if (i > 0) pdf.addPage();
+      
+      // Add title
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(label, 10, 15);
+      
+      // Add the entire content as one long image
+      // Scale the image to fit the page width while maintaining aspect ratio
+      const imgWidth = pageWidth - 20; // 10mm margin on each side
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      console.log(`PDF Export: Adding ${label} - Image dimensions: ${imgWidth.toFixed(1)}mm x ${imgHeight.toFixed(1)}mm`);
+      
+      // Add the full image - it will create a long page automatically
+      // jsPDF will automatically extend the page height to accommodate the full image
+      pdf.addImage(imgData, 'PNG', 10, 25, imgWidth, imgHeight, '', 'FAST');
     }
     pdf.save('dashboard.pdf');
     document.body.classList.remove('pdf-exporting');
