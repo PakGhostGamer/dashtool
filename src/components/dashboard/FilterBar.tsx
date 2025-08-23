@@ -82,22 +82,46 @@ export function FilterBar() {
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const pageWidth = pdf.internal.pageSize.getWidth();
       
-      // Find the main dashboard container
-      const dashboardContainer = document.querySelector('.min-h-screen.bg-gray-50') || 
-                                document.querySelector('.container.mx-auto') || 
-                                document.querySelector('main') ||
-                                document.body;
+      // Find the main dashboard container with better debugging
+      console.log('PDF Export: Searching for dashboard container...');
+      
+      let dashboardContainer = document.querySelector('.min-h-screen.bg-gray-50');
+      console.log('PDF Export: .min-h-screen.bg-gray-50:', dashboardContainer);
       
       if (!dashboardContainer) {
-        console.error('Dashboard container not found');
-        alert('Could not find dashboard content to export');
-        return;
+        dashboardContainer = document.querySelector('.container.mx-auto');
+        console.log('PDF Export: .container.mx-auto:', dashboardContainer);
       }
       
-      console.log('PDF Export: Found dashboard container:', dashboardContainer);
+      if (!dashboardContainer) {
+        dashboardContainer = document.querySelector('main');
+        console.log('PDF Export: main:', dashboardContainer);
+      }
+      
+      if (!dashboardContainer) {
+        dashboardContainer = document.querySelector('#root') || document.querySelector('#app');
+        console.log('PDF Export: #root/#app:', dashboardContainer);
+      }
+      
+      if (!dashboardContainer) {
+        dashboardContainer = document.body;
+        console.log('PDF Export: Using document.body as fallback');
+      }
+      
+      console.log('PDF Export: Final dashboard container:', dashboardContainer);
+      console.log('PDF Export: Container dimensions:', {
+        offsetWidth: dashboardContainer.offsetWidth,
+        offsetHeight: dashboardContainer.offsetHeight,
+        scrollWidth: dashboardContainer.scrollWidth,
+        scrollHeight: dashboardContainer.scrollHeight,
+        clientWidth: dashboardContainer.clientWidth,
+        clientHeight: dashboardContainer.clientHeight
+      });
       
       // Capture the entire dashboard with full height
-      const canvas = await html2canvas(dashboardContainer as HTMLElement, { 
+      console.log('PDF Export: Starting html2canvas capture...');
+      
+      const captureOptions = {
         scale: 1.5, // Higher quality
         useCORS: true,
         allowTaint: true,
@@ -109,9 +133,16 @@ export function FilterBar() {
         height: dashboardContainer.scrollHeight || dashboardContainer.offsetHeight,
         windowWidth: dashboardContainer.scrollWidth || dashboardContainer.offsetWidth,
         windowHeight: dashboardContainer.scrollHeight || dashboardContainer.offsetHeight
-      });
+      };
+      
+      console.log('PDF Export: html2canvas options:', captureOptions);
+      
+      const canvas = await html2canvas(dashboardContainer as HTMLElement, captureOptions);
+      console.log('PDF Export: html2canvas capture completed');
+      console.log('PDF Export: Canvas created with dimensions:', canvas.width, 'x', canvas.height);
       
       const imgData = canvas.toDataURL('image/png');
+      console.log('PDF Export: Image data URL created, length:', imgData.length);
       
       // Calculate dimensions to fit the page width
       const imgWidth = pageWidth - 20; // 10mm margin on each side
@@ -138,6 +169,14 @@ export function FilterBar() {
       // Save the PDF
       pdf.save('amazon-dashboard-report.pdf');
       console.log('PDF Export: Successfully created dashboard.pdf');
+      
+      // Verify the PDF was created with content
+      if (canvas.width === 0 || canvas.height === 0) {
+        console.warn('PDF Export: Canvas has zero dimensions, PDF may be blank');
+        alert('Warning: The PDF may be blank. Check console for details.');
+      } else {
+        console.log('PDF Export: Canvas has valid dimensions, PDF should contain content');
+      }
       
     } catch (error) {
       console.error('PDF Export Error:', error);
