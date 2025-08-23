@@ -448,16 +448,26 @@ async function sendFallbackToDiscord(data, title, type) {
   }
 }
 
-// CORS configuration
+// CORS configuration - must be first middleware
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
+// Also use the cors middleware as backup
 app.use(cors({
   origin: config.server.corsOrigin,
   credentials: true,
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
-// Handle preflight requests explicitly
-app.options('*', cors());
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
