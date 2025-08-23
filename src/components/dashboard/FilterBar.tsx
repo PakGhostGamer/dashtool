@@ -83,10 +83,14 @@ export function FilterBar() {
       { id: 'asin', label: 'ASIN View' },
       { id: 'ppcaudit', label: 'PPC Audit' },
     ];
-    // We'll create custom page sizes for each section to avoid page breaks
-    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    // Create one very long page that fits all content vertically
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
+    const pageHeight = pdf.internal.pageSize.getWidth();
+    
+    // Track current Y position for placing content
+    let currentY = 20; // Start with 20mm margin from top
+    let totalHeight = 20; // Track total height needed
     for (let i = 0; i < tabOrder.length; i++) {
       const { id, label } = tabOrder[i];
       // Switch tab
@@ -161,32 +165,30 @@ export function FilterBar() {
       const imgWidth = pageWidth - 20; // 10mm margin on each side
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
-      // Create a custom page size that fits the entire content
-      const requiredHeight = imgHeight + 40; // Add 40mm for margins and title
-      
       console.log(`PDF Export: Adding ${label} - Section: ${targetElem.tagName}${targetElem.id ? '#' + targetElem.id : ''}${targetElem.className ? '.' + targetElem.className.split(' ').join('.') : ''}`);
       console.log(`PDF Export: Section dimensions - Width: ${targetElem.scrollWidth || targetElem.offsetWidth}px, Height: ${targetElem.scrollHeight || targetElem.offsetHeight}px`);
       console.log(`PDF Export: Canvas dimensions - Width: ${canvas.width}px, Height: ${canvas.height}px`);
-      console.log(`PDF Export: Required page height: ${requiredHeight.toFixed(1)}mm (standard A4: ${pageHeight.toFixed(1)}mm)`);
+      console.log(`PDF Export: Image dimensions - Width: ${imgWidth.toFixed(1)}mm x Height: ${imgHeight.toFixed(1)}mm`);
       
-      // Add a new page with custom dimensions for this section
-      if (i > 0) {
-        // Create a custom page size that fits the content
-        pdf.addPage([pageWidth, requiredHeight]);
-      } else {
-        // For the first page, resize the existing page
-        pdf.setPage(1);
-        pdf.internal.pageSize.setHeight(requiredHeight);
-      }
-      
-      // Add title
+      // Add title for this section
       pdf.setFontSize(16);
       pdf.setFont('helvetica', 'bold');
-      pdf.text(label, 10, 15);
+      pdf.text(label, 10, currentY);
       
-      // Add the full image - now it will fit perfectly on the custom-sized page
-      pdf.addImage(imgData, 'PNG', 10, 25, imgWidth, imgHeight, '', 'FAST');
+      // Add the full image below the title
+      pdf.addImage(imgData, 'PNG', 10, currentY + 10, imgWidth, imgHeight, '', 'FAST');
+      
+      // Move to next section position (add some spacing between sections)
+      currentY += imgHeight + 30;
+      
+      // Update total height needed
+      totalHeight = currentY;
     }
+    
+    // Resize the page to fit all content
+    console.log(`PDF Export: Total height needed: ${totalHeight.toFixed(1)}mm`);
+    pdf.internal.pageSize.setHeight(totalHeight + 20); // Add 20mm bottom margin
+    
     pdf.save('dashboard.pdf');
     document.body.classList.remove('pdf-exporting');
   };
