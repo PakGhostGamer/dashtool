@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: amazon-dashboard-backend
+    env: node
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: GEMINI_API_KEY
+        value: Ecomgliders.llc.11
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: DISCORD_WEBHOOK_URL
+        value: https://discord.com/api/webhooks/1405309205140865106/pnhcTcOcXQs2Aed4-iPOQwt9Z_w22fcd1Do-3anH3CdiYiByhs-7Eb9nSKbpmCFs6FMx
+      - key: DOWNLOAD_DOMAIN
+        value: https://amazon-dashboard-backend.onrender.com
+      - key: BLOB_READ_WRITE_TOKEN
+        value: vercel_blob_rw_v1CVyA3jdnWIxCgp_AZ7jVWCCGghjlt9WNmVaIiFY7g2I6A 
