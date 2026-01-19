@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from '../ui/Card';
 import { KPICard } from '../ui/KPICard';
 import { FilterableTable } from '../ui/FilterableTable';
+import { Button } from '../ui/Button';
 import { Tooltip } from '../ui/Tooltip';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import { DollarSign, TrendingUp, Leaf, ShoppingCart, Users } from 'lucide-react';
@@ -10,6 +11,7 @@ import { formatCurrency, formatPercentage } from '../../utils/calculations';
 
 export function OrganicView() {
   const { state } = useApp();
+  const [showAllProducts, setShowAllProducts] = useState(false);
 
   // Calculate organic metrics
   const totalSales = state.businessReports.reduce((sum, item) => sum + item.sales, 0);
@@ -119,8 +121,11 @@ export function OrganicView() {
     sessions: number;
     cvr: number;
   }>)
-  .sort((a, b) => b.organicSales - a.organicSales)
-  .slice(0, 10);
+  .sort((a, b) => b.organicSales - a.organicSales);
+
+  // Show top 10 initially, all on "See More"
+  const displayedProducts = showAllProducts ? topOrganicProducts : topOrganicProducts.slice(0, 10);
+  const hasMoreProducts = topOrganicProducts.length > 10;
 
   return (
     <div id="organic-content" className="space-y-6">
@@ -172,20 +177,43 @@ export function OrganicView() {
           {topOrganicProducts.length === 0 ? (
             <div className="text-gray-500 py-8 text-center">No Business Report data uploaded yet.</div>
           ) : (
-            <FilterableTable
-              title=""
-              data={topOrganicProducts}
-              columns={[
-                { key: 'asin', label: 'SKU', type: 'text' },
-                { key: 'productName', label: 'Product Name', type: 'text' },
-                { key: 'organicSales', label: 'Organic Sales', type: 'currency' },
-                { key: 'unitsSold', label: 'Units Sold', type: 'number' },
-                { key: 'sessions', label: 'Sessions', type: 'number' },
-                { key: 'cvr', label: 'CVR (%)', type: 'percentage' }
-              ]}
-              maxRows={20}
-              showFilters={false}
-            />
+            <>
+              <FilterableTable
+                title=""
+                data={displayedProducts}
+                columns={[
+                  { key: 'asin', label: 'SKU', type: 'text' },
+                  { key: 'productName', label: 'Product Name', type: 'text' },
+                  { key: 'organicSales', label: 'Organic Sales', type: 'currency' },
+                  { key: 'unitsSold', label: 'Units Sold', type: 'number' },
+                  { key: 'sessions', label: 'Sessions', type: 'number' },
+                  { key: 'cvr', label: 'CVR (%)', type: 'percentage' }
+                ]}
+                maxRows={showAllProducts ? 1000 : 10}
+                showFilters={false}
+              />
+              {hasMoreProducts && (
+                <div className="flex justify-center mt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowAllProducts(!showAllProducts)}
+                    className="flex items-center gap-2"
+                  >
+                    {showAllProducts ? (
+                      <>
+                        <ChevronUp className="w-4 h-4" />
+                        Show Less
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="w-4 h-4" />
+                        See More ({topOrganicProducts.length - 10} more products)
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
