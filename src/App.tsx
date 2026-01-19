@@ -5,7 +5,7 @@ import { FileUpload } from './components/FileUpload';
 import { CostInputsPage } from './components/CostInputs';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { LoginPage } from './components/LoginPage';
-import { getCurrentUser } from './utils/userStorage';
+import { getCurrentUser, initializeUsers } from './utils/userStorage';
 
 function AppContent() {
   const { state } = useApp();
@@ -28,6 +28,9 @@ function App() {
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
+    // Initialize users (ensures admin user exists)
+    initializeUsers();
+    
     // Check if user is already authenticated
     const currentUser = getCurrentUser();
     const authenticated = localStorage.getItem('app_authenticated') === 'true' && currentUser !== null;

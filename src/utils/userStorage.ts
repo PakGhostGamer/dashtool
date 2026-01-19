@@ -12,11 +12,13 @@ const ADMIN_EMAIL = 'info@ecomgliders.com';
 // Initialize with default admin user if no users exist
 export function initializeUsers() {
   const users = getUsers();
-  const adminExists = users.some(u => u.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+  const adminEmailLower = ADMIN_EMAIL.toLowerCase();
+  const adminExists = users.some(u => u.email?.toLowerCase() === adminEmailLower);
   
+  // Always ensure admin user exists with correct credentials
   if (users.length === 0 || !adminExists) {
-    // Remove old admin if exists and add new one
-    const filteredUsers = users.filter(u => u.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase());
+    // Remove any existing admin user (in case email changed)
+    const filteredUsers = users.filter(u => u.email?.toLowerCase() !== adminEmailLower);
     const defaultAdmin: User = {
       id: '1',
       email: ADMIN_EMAIL,
@@ -24,13 +26,23 @@ export function initializeUsers() {
       createdAt: new Date().toISOString()
     };
     saveUsers([...filteredUsers, defaultAdmin]);
+  } else {
+    // Update admin password if admin exists but password might be wrong
+    const adminIndex = users.findIndex(u => u.email?.toLowerCase() === adminEmailLower);
+    if (adminIndex !== -1) {
+      users[adminIndex].password = 'Tool.ecomgliders.11';
+      users[adminIndex].email = ADMIN_EMAIL; // Ensure exact email match
+      saveUsers(users);
+    }
   }
 }
 
 // Check if a user is admin
 export function isAdmin(user: User | null): boolean {
   if (!user) return false;
-  return user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+  const userEmail = user.email?.toLowerCase().trim();
+  const adminEmail = ADMIN_EMAIL.toLowerCase().trim();
+  return userEmail === adminEmail;
 }
 
 export function getUsers(): User[] {
@@ -73,10 +85,18 @@ export function addUser(email: string, password: string): User | null {
 
 export function authenticateUser(email: string, password: string): User | null {
   const users = getUsers();
+  const normalizedEmail = email.toLowerCase().trim();
   const user = users.find(
-    u => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+    u => u.email?.toLowerCase().trim() === normalizedEmail && u.password === password
   );
-  return user || null;
+  // Ensure the returned user has normalized email
+  if (user) {
+    return {
+      ...user,
+      email: user.email.toLowerCase().trim()
+    };
+  }
+  return null;
 }
 
 export function getCurrentUser(): User | null {

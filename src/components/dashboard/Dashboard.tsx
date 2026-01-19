@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { FilterBar } from './FilterBar';
 import { OverallView } from './OverallView';
 import { PPCView } from './PPCView';
@@ -19,6 +19,15 @@ export function Dashboard() {
 
   useEffect(() => {
     const user = getCurrentUser();
+    // Normalize user email to ensure proper admin check
+    if (user && user.email) {
+      const normalizedEmail = user.email.toLowerCase().trim();
+      if (user.email !== normalizedEmail) {
+        // Update stored user with normalized email
+        user.email = normalizedEmail;
+        setCurrentUser(user);
+      }
+    }
     setCurrentUserState(user);
     
     // If non-admin tries to access users tab, redirect to overall
@@ -26,6 +35,19 @@ export function Dashboard() {
       setActiveTab('overall');
     }
   }, [activeTab]);
+  
+  // Refresh current user on mount to ensure admin check works
+  useEffect(() => {
+    const user = getCurrentUser();
+    if (user && user.email) {
+      const normalizedEmail = user.email.toLowerCase().trim();
+      if (user.email !== normalizedEmail) {
+        user.email = normalizedEmail;
+        setCurrentUser(user);
+      }
+    }
+    setCurrentUserState(user);
+  }, []);
 
   const handleLogout = () => {
     if (confirm('Are you sure you want to logout?')) {
@@ -34,7 +56,8 @@ export function Dashboard() {
     }
   };
 
-  const userIsAdmin = isAdmin(currentUser);
+  // Always recalculate admin status based on current user
+  const userIsAdmin = useMemo(() => isAdmin(currentUser), [currentUser]);
 
   useEffect(() => {
     const handler = (e: any) => {
