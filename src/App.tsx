@@ -32,7 +32,9 @@ function AppContent() {
           currentPage="users"
         />
         <div className="container mx-auto px-4 py-6">
-          <UserManagement />
+          <div className="max-w-7xl mx-auto">
+            <UserManagement />
+          </div>
         </div>
       </div>
     );

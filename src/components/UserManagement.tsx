@@ -3,7 +3,7 @@ import { Input } from './ui/Input';
 import { Button } from './ui/Button';
 import { Card, CardContent, CardHeader } from './ui/Card';
 import { UserPlus, Trash2, Mail, Calendar, Shield } from 'lucide-react';
-import { getUsers, addUser, deleteUser, getCurrentUser, isAdmin, User } from '../utils/userStorage';
+import { getUsers, addUser, deleteUser, getCurrentUser, isAdmin, initializeUsers, User } from '../utils/userStorage';
 
 export function UserManagement() {
   const [users, setUsers] = useState<User[]>([]);
@@ -14,16 +14,39 @@ export function UserManagement() {
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isChecking, setIsChecking] = useState(true);
+
+  const loadUsers = () => {
+    const allUsers = getUsers();
+    setUsers(allUsers);
+  };
 
   useEffect(() => {
+    // Initialize users first
+    initializeUsers();
+    
     const user = getCurrentUser();
     setCurrentUser(user);
     
+    // Check admin status
+    const adminCheck = user && isAdmin(user);
+    
     // Only load users if admin
-    if (user && isAdmin(user)) {
+    if (adminCheck) {
       loadUsers();
     }
+    
+    setIsChecking(false);
   }, []);
+
+  // Show loading state while checking
+  if (isChecking) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-gray-600">Loading...</div>
+      </div>
+    );
+  }
 
   // HARD CHECK: Only info@ecomgliders.com can access
   const adminCheck = currentUser && isAdmin(currentUser);
@@ -38,16 +61,12 @@ export function UserManagement() {
             </div>
             <h2 className="text-xl font-bold text-gray-900 mb-2">Access Denied</h2>
             <p className="text-gray-600">You don't have permission to access User Management. Only administrators can manage users.</p>
+            <p className="text-sm text-gray-500 mt-2">Current user: {currentUser?.email || 'Not logged in'}</p>
           </CardContent>
         </Card>
       </div>
     );
   }
-
-  const loadUsers = () => {
-    const allUsers = getUsers();
-    setUsers(allUsers);
-  };
 
   const handleAddUser = (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,7 +136,7 @@ export function UserManagement() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 py-6">
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
