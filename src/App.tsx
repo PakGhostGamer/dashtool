@@ -5,23 +5,75 @@ import { FileUpload } from './components/FileUpload';
 import { CostInputsPage } from './components/CostInputs';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { LoginPage } from './components/LoginPage';
+import { NavBar } from './components/NavBar';
+import { UserManagement } from './components/UserManagement';
 import { getCurrentUser, initializeUsers } from './utils/userStorage';
 import './utils/debugAdmin'; // Initialize debug utility for console
 
 function AppContent() {
   const { state } = useApp();
+  const [showUserManagement, setShowUserManagement] = useState(false);
+
+  const handleNavigateToUsers = () => {
+    setShowUserManagement(true);
+  };
+
+  const handleNavigateToDashboard = () => {
+    setShowUserManagement(false);
+  };
+
+  // Show User Management if requested
+  if (showUserManagement) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <NavBar 
+          onNavigateToUsers={handleNavigateToUsers} 
+          onNavigateToDashboard={handleNavigateToDashboard}
+          currentPage="users"
+        />
+        <div className="container mx-auto px-4 py-6">
+          <UserManagement />
+        </div>
+      </div>
+    );
+  }
 
   // Show upload page if no data
   if (state.businessReports.length === 0 || state.searchTermReports.length === 0) {
-    return <FileUpload />;
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <NavBar 
+          onNavigateToUsers={handleNavigateToUsers} 
+          currentPage="upload"
+        />
+        <FileUpload />
+      </div>
+    );
   }
 
   // Show cost inputs if not configured
   if (state.costInputs.length === 0) {
-    return <CostInputsPage />;
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <NavBar 
+          onNavigateToUsers={handleNavigateToUsers} 
+          currentPage="costs"
+        />
+        <CostInputsPage />
+      </div>
+    );
   }
 
-  return <Dashboard />;
+  return (
+    <>
+      <NavBar 
+        onNavigateToUsers={handleNavigateToUsers} 
+        onNavigateToDashboard={handleNavigateToDashboard}
+        currentPage="dashboard"
+      />
+      <Dashboard />
+    </>
+  );
 }
 
 function App() {

@@ -8,9 +8,7 @@ import { PPCAudit } from './PPCAudit';
 import { AIAudit } from './AIAudit';
 import { UserManagement } from '../UserManagement';
 import { Card, CardContent } from '../ui/Card';
-import { Button } from '../ui/Button';
 import { MdBarChart, MdOutlineTrackChanges, MdEco, MdInventory, MdSearch, MdPsychology, MdPeople } from 'react-icons/md';
-import { LogOut } from 'lucide-react';
 import { getCurrentUser, setCurrentUser, isAdmin } from '../../utils/userStorage';
 import '../../utils/debugAdmin'; // Initialize debug utility
 
@@ -50,12 +48,6 @@ export function Dashboard() {
     setCurrentUserState(user);
   }, []);
 
-  const handleLogout = () => {
-    if (confirm('Are you sure you want to logout?')) {
-      setCurrentUser(null);
-      window.location.reload();
-    }
-  };
 
   // Always recalculate admin status based on current user
   const userIsAdmin = useMemo(() => {
@@ -182,7 +174,7 @@ export function Dashboard() {
       <header className="bg-white border-b border-gray-200">
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col items-center justify-center">
-            <div className="flex items-center justify-between w-full">
+            <div className="flex items-center justify-center">
               <div className="flex items-center gap-3">
                 {/* 3D Lens SVG */}
                 <span className="inline-block">
@@ -204,22 +196,6 @@ export function Dashboard() {
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight" style={{letterSpacing: '-0.01em'}}>
                   eCom Gliders Lens
                 </h1>
-              </div>
-              <div className="flex items-center gap-3">
-                {currentUser && (
-                  <span className="text-sm text-gray-600 hidden sm:block">
-                    {currentUser.email}
-                  </span>
-                )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleLogout}
-                  className="text-gray-700"
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Logout
-                </Button>
               </div>
             </div>
           </div>
