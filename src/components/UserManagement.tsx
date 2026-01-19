@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Input } from './ui/Input';
 import { Button } from './ui/Button';
 import { Card, CardContent, CardHeader } from './ui/Card';
-import { UserPlus, Trash2, Mail, Calendar, Shield } from 'lucide-react';
+import { UserPlus, Trash2, Mail, Calendar, Shield, Crown } from 'lucide-react';
 import { getUsers, addUser, deleteUser, getCurrentUser, isAdmin, initializeUsers, User } from '../utils/userStorage';
 
 export function UserManagement() {
   const [users, setUsers] = useState<User[]>([]);
+  const [newName, setNewName] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -103,10 +104,11 @@ export function UserManagement() {
 
     // Simulate delay
     setTimeout(() => {
-      const result = addUser(newEmail, newPassword);
+      const result = addUser(newEmail, newPassword, newName);
 
       if (result) {
-        setSuccess(`User ${newEmail} has been created successfully!`);
+        setSuccess(`User ${newName || newEmail} has been created successfully!`);
+        setNewName('');
         setNewEmail('');
         setNewPassword('');
         setConfirmPassword('');
@@ -119,18 +121,27 @@ export function UserManagement() {
     }, 300);
   };
 
-  const handleDeleteUser = (userId: string, userEmail: string) => {
-    if (!confirm(`Are you sure you want to delete user ${userEmail}?`)) {
+  const handleDeleteUser = (userId: string, userEmail: string, userName?: string) => {
+    const user = users.find(u => u.id === userId);
+    
+    // Check if trying to delete admin
+    if (user && isAdmin(user)) {
+      setError('Admin user cannot be deleted');
+      setTimeout(() => setError(''), 3000);
       return;
     }
 
-    const success = deleteUser(userId);
-    if (success) {
-      setSuccess(`User ${userEmail} has been deleted successfully!`);
+    if (!confirm(`Are you sure you want to delete user ${userName || userEmail}?`)) {
+      return;
+    }
+
+    const result = deleteUser(userId);
+    if (result.success) {
+      setSuccess(`User ${userName || userEmail} has been deleted successfully!`);
       loadUsers();
       setTimeout(() => setSuccess(''), 3000);
     } else {
-      setError('Failed to delete user');
+      setError(result.error || 'Failed to delete user');
       setTimeout(() => setError(''), 3000);
     }
   };
@@ -147,7 +158,15 @@ export function UserManagement() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleAddUser} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Input
+                type="text"
+                label="Name"
+                placeholder="Enter full name"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                disabled={isLoading}
+              />
               <Input
                 type="email"
                 label="Email"
@@ -193,6 +212,9 @@ export function UserManagement() {
               <UserPlus className="w-4 h-4 mr-2" />
               {isLoading ? 'Adding User...' : 'Add User'}
             </Button>
+            {!newName.trim() && (
+              <p className="text-sm text-gray-500">Note: Name is optional but recommended</p>
+            )}
           </form>
         </CardContent>
       </Card>
@@ -206,34 +228,64 @@ export function UserManagement() {
             <p className="text-gray-500 text-center py-8">No users found. Add a user to get started.</p>
           ) : (
             <div className="space-y-3">
-              {users.map((user) => (
-                <div
-                  key={user.id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex items-center gap-4 flex-1">
-                    <div className="bg-blue-100 rounded-full p-2">
-                      <Mail className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-900">{user.email}</div>
-                      <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                        <Calendar className="w-4 h-4" />
-                        <span>Created: {new Date(user.createdAt).toLocaleDateString()}</span>
+              {users.map((user) => {
+                const userIsAdminUser = isAdmin(user);
+                return (
+                  <div
+                    key={user.id}
+                    className={`flex items-center justify-between p-4 rounded-lg border transition-colors ${
+                      userIsAdminUser 
+                        ? 'bg-blue-50 border-blue-200 hover:bg-blue-100' 
+                        : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                    }`}
+                  >
+                    <div className="flex items-center gap-4 flex-1">
+                      <div className={`rounded-full p-2 ${userIsAdminUser ? 'bg-blue-200' : 'bg-blue-100'}`}>
+                        {userIsAdminUser ? (
+                          <Crown className="w-5 h-5 text-blue-600" />
+                        ) : (
+                          <Mail className="w-5 h-5 text-blue-600" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-gray-900">
+                            {user.name || user.email}
+                          </span>
+                          {userIsAdminUser && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-600 text-white">
+                              <Crown className="w-3 h-3" />
+                              Admin
+                            </span>
+                          )}
+                        </div>
+                        {user.name && (
+                          <div className="text-sm text-gray-600 mt-0.5">{user.email}</div>
+                        )}
+                        <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                          <Calendar className="w-4 h-4" />
+                          <span>Created: {new Date(user.createdAt).toLocaleDateString()}</span>
+                        </div>
                       </div>
                     </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteUser(user.id, user.email, user.name)}
+                      disabled={userIsAdminUser}
+                      className={`${
+                        userIsAdminUser
+                          ? 'opacity-50 cursor-not-allowed text-gray-400'
+                          : 'text-red-600 hover:text-red-700 hover:bg-red-50'
+                      }`}
+                      title={userIsAdminUser ? 'Admin user cannot be deleted' : 'Delete user'}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete
+                    </Button>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDeleteUser(user.id, user.email)}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
-                  </Button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>

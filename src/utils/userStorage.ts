@@ -1,5 +1,6 @@
 export interface User {
   id: string;
+  name?: string;
   email: string;
   password: string; // In production, this should be hashed
   createdAt: string;
@@ -23,6 +24,7 @@ export function initializeUsers() {
     const filteredUsers = users.filter(u => u.email?.toLowerCase() !== adminEmailLower);
     const defaultAdmin: User = {
       id: '1',
+      name: 'Admin',
       email: ADMIN_EMAIL,
       password: ADMIN_PASSWORD, // Should be hashed in production
       createdAt: new Date().toISOString()
@@ -83,7 +85,7 @@ export function saveUsers(users: User[]) {
   }
 }
 
-export function addUser(email: string, password: string): User | null {
+export function addUser(email: string, password: string, name?: string): User | null {
   const users = getUsers();
   
   // Check if user with email already exists
@@ -93,6 +95,7 @@ export function addUser(email: string, password: string): User | null {
 
   const newUser: User = {
     id: Date.now().toString(),
+    name: name?.trim() || undefined,
     email: email.toLowerCase(),
     password, // Should be hashed in production
     createdAt: new Date().toISOString()
@@ -139,14 +142,20 @@ export function setCurrentUser(user: User | null) {
   }
 }
 
-export function deleteUser(userId: string): boolean {
+export function deleteUser(userId: string): { success: boolean; error?: string } {
   const users = getUsers();
-  const filteredUsers = users.filter(u => u.id !== userId);
+  const userToDelete = users.find(u => u.id === userId);
   
-  if (filteredUsers.length === users.length) {
-    return false; // User not found
+  if (!userToDelete) {
+    return { success: false, error: 'User not found' };
   }
   
+  // Prevent admin deletion
+  if (isAdmin(userToDelete)) {
+    return { success: false, error: 'Admin user cannot be deleted' };
+  }
+  
+  const filteredUsers = users.filter(u => u.id !== userId);
   saveUsers(filteredUsers);
   
   // If deleted user is current user, logout
@@ -155,5 +164,5 @@ export function deleteUser(userId: string): boolean {
     setCurrentUser(null);
   }
   
-  return true;
+  return { success: true };
 }
