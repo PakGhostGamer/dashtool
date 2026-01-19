@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Input } from './ui/Input';
 import { Button } from './ui/Button';
 import { Card, CardContent, CardHeader } from './ui/Card';
-import { UserPlus, Trash2, Mail, Calendar, Shield, Crown } from 'lucide-react';
+import { UserPlus, Trash2, Mail, Calendar, Shield, Crown, Clock } from 'lucide-react';
 import { getUsers, addUser, deleteUser, getCurrentUser, isAdmin, initializeUsers, User } from '../utils/userStorage';
 
 export function UserManagement() {
@@ -221,7 +221,10 @@ export function UserManagement() {
 
       <Card>
         <CardHeader>
-          <h3 className="text-xl font-semibold text-gray-900">Existing Users</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-semibold text-gray-900">Existing Users</h3>
+            <span className="text-sm text-gray-500">Total: {users.length} user(s)</span>
+          </div>
         </CardHeader>
         <CardContent>
           {users.length === 0 ? (
@@ -262,9 +265,23 @@ export function UserManagement() {
                         {user.name && (
                           <div className="text-sm text-gray-600 mt-0.5">{user.email}</div>
                         )}
-                        <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                          <Calendar className="w-4 h-4" />
-                          <span>Created: {new Date(user.createdAt).toLocaleDateString()}</span>
+                        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 mt-1">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="w-4 h-4" />
+                            <span>Created: {new Date(user.createdAt).toLocaleDateString()}</span>
+                          </div>
+                          {user.lastLoginAt && (
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-4 h-4" />
+                              <span>Last Login: {new Date(user.lastLoginAt).toLocaleString()}</span>
+                            </div>
+                          )}
+                          {!user.lastLoginAt && (
+                            <div className="flex items-center gap-1 text-gray-400">
+                              <Clock className="w-4 h-4" />
+                              <span>Never logged in</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

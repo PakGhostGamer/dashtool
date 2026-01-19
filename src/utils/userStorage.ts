@@ -4,6 +4,8 @@ export interface User {
   email: string;
   password: string; // In production, this should be hashed
   createdAt: string;
+  lastLoginAt?: string;
+  loginHistory?: string[]; // Array of login timestamps
 }
 
 const USERS_STORAGE_KEY = 'app_users';
@@ -109,15 +111,34 @@ export function addUser(email: string, password: string, name?: string): User | 
 export function authenticateUser(email: string, password: string): User | null {
   const users = getUsers();
   const normalizedEmail = email.toLowerCase().trim();
-  const user = users.find(
+  const userIndex = users.findIndex(
     u => u.email?.toLowerCase().trim() === normalizedEmail && u.password === password
   );
-  // Ensure the returned user has normalized email
-  if (user) {
-    return {
-      ...user,
-      email: user.email.toLowerCase().trim()
-    };
+  
+  if (userIndex !== -1) {
+    const user = users[userIndex];
+    const loginTime = new Date().toISOString();
+    
+    // Update last login time
+    user.lastLoginAt = loginTime;
+    
+    // Update login history (keep last 10 logins)
+    if (!user.loginHistory) {
+      user.loginHistory = [];
+    }
+    user.loginHistory.push(loginTime);
+    if (user.loginHistory.length > 10) {
+      user.loginHistory = user.loginHistory.slice(-10); // Keep only last 10
+    }
+    
+    // Normalize email
+    user.email = user.email.toLowerCase().trim();
+    
+    // Save updated user
+    users[userIndex] = user;
+    saveUsers(users);
+    
+    return user;
   }
   return null;
 }
