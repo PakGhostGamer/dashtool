@@ -5,7 +5,7 @@ import { FilterableTable } from '../ui/FilterableTable';
 import { Button } from '../ui/Button';
 import { Tooltip } from '../ui/Tooltip';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
-import { DollarSign, TrendingUp, Leaf, ShoppingCart, Users } from 'lucide-react';
+import { DollarSign, TrendingUp, Leaf, ShoppingCart, Users, ChevronDown, ChevronUp } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { formatCurrency, formatPercentage } from '../../utils/calculations';
 
