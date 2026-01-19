@@ -2,34 +2,46 @@ import React, { useState } from 'react';
 import { Input } from './ui/Input';
 import { Button } from './ui/Button';
 import { Card, CardContent, CardHeader } from './ui/Card';
-import { Lock } from 'lucide-react';
+import { Lock, Mail } from 'lucide-react';
+import { authenticateUser, initializeUsers, setCurrentUser } from '../utils/userStorage';
 
-interface PasswordProtectionProps {
+interface LoginPageProps {
   onSuccess: () => void;
 }
 
-export function PasswordProtection({ onSuccess }: PasswordProtectionProps) {
+export function LoginPage({ onSuccess }: LoginPageProps) {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // Default password - can be changed later
-  const correctPassword = 'admin123';
+  React.useEffect(() => {
+    // Initialize users if needed
+    initializeUsers();
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    
+    if (!email.trim() || !password.trim()) {
+      setError('Please enter both email and password');
+      return;
+    }
+
     setIsLoading(true);
 
     // Simulate a small delay for better UX
     setTimeout(() => {
-      if (password === correctPassword) {
-        // Store authentication in localStorage
-        localStorage.setItem('app_authenticated', 'true');
+      const user = authenticateUser(email, password);
+      
+      if (user) {
+        // Store current user and authentication
+        setCurrentUser(user);
         setIsLoading(false);
         onSuccess();
       } else {
-        setError('Incorrect password. Please try again.');
+        setError('Invalid email or password. Please try again.');
         setIsLoading(false);
         setPassword('');
       }
@@ -45,27 +57,36 @@ export function PasswordProtection({ onSuccess }: PasswordProtectionProps) {
               <Lock className="w-8 h-8 text-blue-600" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Password Required</h1>
-          <p className="text-gray-600 mt-2">Please enter the password to access the application</p>
+          <h1 className="text-2xl font-bold text-gray-900">Login</h1>
+          <p className="text-gray-600 mt-2">Please enter your email and password to access the application</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
-              type="password"
-              label="Password"
-              placeholder="Enter password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              error={error}
+              type="email"
+              label="Email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              error={error && !email.trim() ? error : undefined}
               disabled={isLoading}
               autoFocus
+            />
+            <Input
+              type="password"
+              label="Password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              error={error && email.trim() ? error : undefined}
+              disabled={isLoading}
             />
             <Button
               type="submit"
               className="w-full"
-              disabled={isLoading || !password.trim()}
+              disabled={isLoading || !email.trim() || !password.trim()}
             >
-              {isLoading ? 'Verifying...' : 'Enter'}
+              {isLoading ? 'Logging in...' : 'Login'}
             </Button>
           </form>
         </CardContent>

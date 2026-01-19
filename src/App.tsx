@@ -4,7 +4,8 @@ import { AppProvider, useApp } from './context/AppContext';
 import { FileUpload } from './components/FileUpload';
 import { CostInputsPage } from './components/CostInputs';
 import { Dashboard } from './components/dashboard/Dashboard';
-import { PasswordProtection } from './components/PasswordProtection';
+import { LoginPage } from './components/LoginPage';
+import { getCurrentUser } from './utils/userStorage';
 
 function AppContent() {
   const { state } = useApp();
@@ -28,7 +29,8 @@ function App() {
 
   useEffect(() => {
     // Check if user is already authenticated
-    const authenticated = localStorage.getItem('app_authenticated') === 'true';
+    const currentUser = getCurrentUser();
+    const authenticated = localStorage.getItem('app_authenticated') === 'true' && currentUser !== null;
     setIsAuthenticated(authenticated);
     setIsChecking(false);
   }, []);
@@ -46,9 +48,9 @@ function App() {
     );
   }
 
-  // Show password protection if not authenticated
+  // Show login page if not authenticated
   if (!isAuthenticated) {
-    return <PasswordProtection onSuccess={handleAuthSuccess} />;
+    return <LoginPage onSuccess={handleAuthSuccess} />;
   }
 
   return (

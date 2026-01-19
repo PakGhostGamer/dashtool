@@ -6,11 +6,35 @@ import { OrganicView } from './OrganicView';
 import { ASINView } from './ASINView';
 import { PPCAudit } from './PPCAudit';
 import { AIAudit } from './AIAudit';
+import { UserManagement } from '../UserManagement';
 import { Card, CardContent } from '../ui/Card';
-import { MdBarChart, MdOutlineTrackChanges, MdEco, MdInventory, MdSearch, MdPsychology } from 'react-icons/md';
+import { Button } from '../ui/Button';
+import { MdBarChart, MdOutlineTrackChanges, MdEco, MdInventory, MdSearch, MdPsychology, MdPeople } from 'react-icons/md';
+import { LogOut } from 'lucide-react';
+import { getCurrentUser, setCurrentUser, isAdmin } from '../../utils/userStorage';
 
 export function Dashboard() {
   const [activeTab, setActiveTab] = useState('overall');
+  const [currentUser, setCurrentUserState] = useState(getCurrentUser());
+
+  useEffect(() => {
+    const user = getCurrentUser();
+    setCurrentUserState(user);
+    
+    // If non-admin tries to access users tab, redirect to overall
+    if (user && !isAdmin(user) && activeTab === 'users') {
+      setActiveTab('overall');
+    }
+  }, [activeTab]);
+
+  const handleLogout = () => {
+    if (confirm('Are you sure you want to logout?')) {
+      setCurrentUser(null);
+      window.location.reload();
+    }
+  };
+
+  const userIsAdmin = isAdmin(currentUser);
 
   useEffect(() => {
     const handler = (e: any) => {
@@ -34,14 +58,18 @@ export function Dashboard() {
     };
   }, []);
 
-  const tabs = [
+  const allTabs = [
     { id: 'overall', label: 'Overall Account', icon: <MdBarChart size={20} /> },
     { id: 'ppc', label: 'PPC View', icon: <MdOutlineTrackChanges size={20} /> },
     { id: 'organic', label: 'Organic View', icon: <MdEco size={20} /> },
     { id: 'asin', label: 'ASIN Performance', icon: <MdInventory size={20} /> },
     { id: 'audit', label: 'PPC Audit', icon: <MdSearch size={20} /> },
-    { id: 'ai-audit', label: '🤖 AI Insights', icon: <MdPsychology size={20} /> }
+    { id: 'ai-audit', label: '🤖 AI Insights', icon: <MdPsychology size={20} /> },
+    { id: 'users', label: 'User Management', icon: <MdPeople size={20} />, adminOnly: true }
   ];
+
+  // Filter tabs based on admin status
+  const tabs = allTabs.filter(tab => !tab.adminOnly || userIsAdmin);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -57,6 +85,8 @@ export function Dashboard() {
         return <PPCAudit />;
       case 'ai-audit':
         return <AIAudit />;
+      case 'users':
+        return <UserManagement />;
       default:
         return <OverallView />;
     }
@@ -90,27 +120,45 @@ export function Dashboard() {
       <header className="bg-white border-b border-gray-200">
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col items-center justify-center">
-            <div className="flex items-center gap-3">
-              {/* 3D Lens SVG */}
-              <span className="inline-block">
-                <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <defs>
-                    <radialGradient id="lensGradient" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stopColor="#a5b4fc" />
-                      <stop offset="60%" stopColor="#818cf8" />
-                      <stop offset="100%" stopColor="#6366f1" />
-                    </radialGradient>
-                  </defs>
-                  <ellipse cx="19" cy="19" rx="15" ry="15" fill="url(#lensGradient)" />
-                  <ellipse cx="19" cy="19" rx="10" ry="10" fill="#fff" fillOpacity="0.18" />
-                  <ellipse cx="15" cy="15" rx="3" ry="2" fill="#fff" fillOpacity="0.45" />
-                  <ellipse cx="24" cy="24" rx="2" ry="1.2" fill="#fff" fillOpacity="0.25" />
-                  <ellipse cx="19" cy="19" rx="15" ry="15" stroke="#6366f1" strokeWidth="2" fill="none" />
-                </svg>
-              </span>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight text-center" style={{letterSpacing: '-0.01em'}}>
-                eCom Gliders Lens
-              </h1>
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-3">
+                {/* 3D Lens SVG */}
+                <span className="inline-block">
+                  <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <radialGradient id="lensGradient" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stopColor="#a5b4fc" />
+                        <stop offset="60%" stopColor="#818cf8" />
+                        <stop offset="100%" stopColor="#6366f1" />
+                      </radialGradient>
+                    </defs>
+                    <ellipse cx="19" cy="19" rx="15" ry="15" fill="url(#lensGradient)" />
+                    <ellipse cx="19" cy="19" rx="10" ry="10" fill="#fff" fillOpacity="0.18" />
+                    <ellipse cx="15" cy="15" rx="3" ry="2" fill="#fff" fillOpacity="0.45" />
+                    <ellipse cx="24" cy="24" rx="2" ry="1.2" fill="#fff" fillOpacity="0.25" />
+                    <ellipse cx="19" cy="19" rx="15" ry="15" stroke="#6366f1" strokeWidth="2" fill="none" />
+                  </svg>
+                </span>
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight" style={{letterSpacing: '-0.01em'}}>
+                  eCom Gliders Lens
+                </h1>
+              </div>
+              <div className="flex items-center gap-3">
+                {currentUser && (
+                  <span className="text-sm text-gray-600 hidden sm:block">
+                    {currentUser.email}
+                  </span>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="text-gray-700"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </Button>
+              </div>
             </div>
           </div>
         </div>
