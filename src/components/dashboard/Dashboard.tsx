@@ -12,6 +12,7 @@ import { Button } from '../ui/Button';
 import { MdBarChart, MdOutlineTrackChanges, MdEco, MdInventory, MdSearch, MdPsychology, MdPeople } from 'react-icons/md';
 import { LogOut } from 'lucide-react';
 import { getCurrentUser, setCurrentUser, isAdmin } from '../../utils/userStorage';
+import '../../utils/debugAdmin'; // Initialize debug utility
 
 export function Dashboard() {
   const [activeTab, setActiveTab] = useState('overall');
@@ -57,7 +58,14 @@ export function Dashboard() {
   };
 
   // Always recalculate admin status based on current user
-  const userIsAdmin = useMemo(() => isAdmin(currentUser), [currentUser]);
+  const userIsAdmin = useMemo(() => {
+    const adminStatus = isAdmin(currentUser);
+    console.log('[Dashboard] Admin check:', { 
+      currentUserEmail: currentUser?.email,
+      isAdmin: adminStatus 
+    });
+    return adminStatus;
+  }, [currentUser]);
 
   useEffect(() => {
     const handler = (e: any) => {
@@ -91,8 +99,39 @@ export function Dashboard() {
     { id: 'users', label: 'User Management', icon: <MdPeople size={20} />, adminOnly: true }
   ];
 
-  // Filter tabs based on admin status
-  const tabs = allTabs.filter(tab => !tab.adminOnly || userIsAdmin);
+  // Filter tabs based on admin status - ONLY show User Management to info@ecomgliders.com
+  const tabs = React.useMemo(() => {
+    // Always get fresh user from storage for admin check
+    const freshUser = getCurrentUser();
+    const freshAdminCheck = isAdmin(freshUser);
+    
+    // User Management tab ONLY for admin
+    const filtered = allTabs.filter(tab => {
+      if (tab.adminOnly) {
+        // Must be admin to see this tab
+        const showTab = freshAdminCheck;
+        console.log('[Dashboard] User Management Tab Check:', { 
+          tabId: tab.id, 
+          adminOnly: tab.adminOnly, 
+          userEmail: freshUser?.email,
+          userIsAdmin: userIsAdmin,
+          freshAdminCheck: freshAdminCheck,
+          showTab: showTab,
+          requiredEmail: 'info@ecomgliders.com'
+        });
+        return showTab;
+      }
+      return true;
+    });
+    
+    console.log('[Dashboard] Tabs Visible:', filtered.map(t => t.id), {
+      currentUser: freshUser?.email,
+      isAdmin: freshAdminCheck,
+      userManagementVisible: filtered.some(t => t.id === 'users')
+    });
+    
+    return filtered;
+  }, [userIsAdmin]);
 
   const renderContent = () => {
     switch (activeTab) {

@@ -7,7 +7,9 @@ export interface User {
 
 const USERS_STORAGE_KEY = 'app_users';
 const CURRENT_USER_KEY = 'app_current_user';
+// HARDCODED ADMIN - ONLY THIS USER IS ADMIN
 const ADMIN_EMAIL = 'info@ecomgliders.com';
+const ADMIN_PASSWORD = 'Tool.ecomgliders.11';
 
 // Initialize with default admin user if no users exist
 export function initializeUsers() {
@@ -22,7 +24,7 @@ export function initializeUsers() {
     const defaultAdmin: User = {
       id: '1',
       email: ADMIN_EMAIL,
-      password: 'Tool.ecomgliders.11', // Should be hashed in production
+      password: ADMIN_PASSWORD, // Should be hashed in production
       createdAt: new Date().toISOString()
     };
     saveUsers([...filteredUsers, defaultAdmin]);
@@ -30,20 +32,38 @@ export function initializeUsers() {
     // Update admin password if admin exists but password might be wrong
     const adminIndex = users.findIndex(u => u.email?.toLowerCase() === adminEmailLower);
     if (adminIndex !== -1) {
-      users[adminIndex].password = 'Tool.ecomgliders.11';
+      users[adminIndex].password = ADMIN_PASSWORD;
       users[adminIndex].email = ADMIN_EMAIL; // Ensure exact email match
       saveUsers(users);
     }
   }
 }
 
-// Check if a user is admin
+// Check if a user is admin - ONLY info@ecomgliders.com
 export function isAdmin(user: User | null): boolean {
-  if (!user) return false;
-  const userEmail = user.email?.toLowerCase().trim();
-  const adminEmail = ADMIN_EMAIL.toLowerCase().trim();
-  return userEmail === adminEmail;
+  if (!user || !user.email) {
+    return false;
+  }
+  // HARDCODED: Only this exact email is admin
+  const userEmail = user.email.toLowerCase().trim();
+  const adminEmail = ADMIN_EMAIL.toLowerCase().trim(); // 'info@ecomgliders.com'
+  const isAdminUser = userEmail === adminEmail;
+  
+  // Debug log
+  console.log('[isAdmin] Admin Check:', { 
+    userEmail: user.email,
+    userEmailNormalized: userEmail, 
+    adminEmailRequired: ADMIN_EMAIL,
+    adminEmailNormalized: adminEmail, 
+    isAdmin: isAdminUser,
+    match: userEmail === adminEmail
+  });
+  
+  return isAdminUser;
 }
+
+// Export admin email for reference
+export const ADMIN_EMAIL_CONSTANT = ADMIN_EMAIL;
 
 export function getUsers(): User[] {
   try {

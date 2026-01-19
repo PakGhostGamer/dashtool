@@ -6,6 +6,7 @@ import { CostInputsPage } from './components/CostInputs';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { LoginPage } from './components/LoginPage';
 import { getCurrentUser, initializeUsers } from './utils/userStorage';
+import './utils/debugAdmin'; // Initialize debug utility for console
 
 function AppContent() {
   const { state } = useApp();
