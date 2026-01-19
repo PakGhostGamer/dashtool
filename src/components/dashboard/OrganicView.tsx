@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from '../ui/Card';
 import { KPICard } from '../ui/KPICard';
 import { FilterableTable } from '../ui/FilterableTable';
 import { Tooltip } from '../ui/Tooltip';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import { DollarSign, TrendingUp, Leaf, ShoppingCart, Users } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { formatCurrency, formatPercentage } from '../../utils/calculations';
@@ -21,76 +21,40 @@ export function OrganicView() {
   // Estimate organic units (assuming PPC contributes proportionally to its sales)
   const organicUnits = totalSales > 0 ? Math.round(totalUnits * (organicSales / totalSales)) : 0;
   
-  const avgCVR = totalSessions > 0 ? (totalUnits / totalSessions) * 100 : 0;
+  const avgCVR = totalSessions > 0 ? (organicUnits / totalSessions) * 100 : 0;
+  const organicCVR = organicSales > 0 ? (organicUnits / totalSessions) * 100 : 0;
+  const salesPerSession = totalSessions > 0 ? organicSales / totalSessions : 0;
 
-  // Prepare Organic vs PPC comparison data
-  const comparisonData = [
+  // Prepare Organic-only metrics data
+  const organicMetricsData = [
     {
       metric: 'Sales',
-      Organic: organicSales,
-      PPC: ppcSales,
-      organicColor: '#34A853',
-      ppcColor: '#EA4335'
+      value: organicSales
     },
     {
       metric: 'Units',
-      Organic: organicUnits,
-      PPC: Math.round(totalUnits * (ppcSales / totalSales)),
-      organicColor: '#34A853',
-      ppcColor: '#EA4335'
+      value: organicUnits
     },
     {
       metric: 'CVR (%)',
-      Organic: organicSales > 0 ? (organicUnits / totalSessions) * 100 : 0,
-      PPC: ppcSales > 0 ? (Math.round(totalUnits * (ppcSales / totalSales)) / totalSessions) * 100 : 0,
-      organicColor: '#34A853',
-      ppcColor: '#EA4335'
+      value: organicCVR
     },
     {
       metric: 'Sales per Session',
-      Organic: totalSessions > 0 ? organicSales / totalSessions : 0,
-      PPC: totalSessions > 0 ? ppcSales / totalSessions : 0,
-      organicColor: '#34A853',
-      ppcColor: '#EA4335'
+      value: salesPerSession
     }
   ];
 
   const kpis = [
-    {
-      title: 'Total Sales',
-      value: totalSales,
-      format: 'currency' as const,
-      icon: <DollarSign className="w-6 h-6" />,
-      extra: (
-        <div className="inline-flex items-center mt-1 text-green-700 bg-green-100 rounded px-2 py-0.5 text-xs font-semibold">
-          <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-          100%
-        </div>
-      )
-    },
-    {
-      title: 'PPC Sales',
-      value: ppcSales,
-      format: 'currency' as const,
-      icon: <TrendingUp className="w-6 h-6" />,
-      extra: (
-        <div className="inline-flex items-center mt-1 text-green-700 bg-green-100 rounded px-2 py-0.5 text-xs font-semibold group relative cursor-pointer">
-          <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-          <span className="opacity-60 group-hover:opacity-100 transition-opacity duration-200">+{totalSales > 0 ? ((ppcSales / totalSales) * 100).toFixed(1) : '0'}%</span>
-          <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 w-max bg-black text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 pointer-events-none z-10 whitespace-nowrap">This is {totalSales > 0 ? ((ppcSales / totalSales) * 100).toFixed(1) : '0'}% of Total Sales</span>
-        </div>
-      )
-    },
     {
       title: 'Organic Sales',
       value: organicSales,
       format: 'currency' as const,
       icon: <Leaf className="w-6 h-6" />,
       extra: (
-        <div className="inline-flex items-center mt-1 text-green-700 bg-green-100 rounded px-2 py-0.5 text-xs font-semibold group relative cursor-pointer">
+        <div className="inline-flex items-center mt-1 text-green-700 bg-green-100 rounded px-2 py-0.5 text-xs font-semibold">
           <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-          <span className="opacity-60 group-hover:opacity-100 transition-opacity duration-200">+{totalSales > 0 ? ((organicSales / totalSales) * 100).toFixed(1) : '0'}%</span>
-          <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 w-max bg-black text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 pointer-events-none z-10 whitespace-nowrap">This is {totalSales > 0 ? ((organicSales / totalSales) * 100).toFixed(1) : '0'}% of Total Sales</span>
+          100% Organic
         </div>
       )
     },
@@ -176,25 +140,25 @@ export function OrganicView() {
 
       <Card>
         <CardHeader>
-          <h3 className="text-lg font-semibold">Organic vs PPC Performance Comparison</h3>
+          <h3 className="text-lg font-semibold">Organic Performance Metrics</h3>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={comparisonData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <BarChart data={organicMetricsData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="metric" />
               <YAxis />
               <RechartsTooltip 
                 formatter={(value, name) => [
-                  name === 'Organic' ? formatCurrency(Number(value)) : 
-                  name === 'PPC' ? formatCurrency(Number(value)) : 
-                  typeof value === 'number' ? value.toFixed(2) : value,
-                  name
+                  typeof value === 'number' && value > 1000 
+                    ? formatCurrency(Number(value)) 
+                    : typeof value === 'number' 
+                      ? value.toFixed(2) 
+                      : value,
+                  'Organic'
                 ]}
               />
-              <Legend />
-              <Bar dataKey="Organic" fill="#34A853" name="Organic" />
-              <Bar dataKey="PPC" fill="#EA4335" name="PPC" />
+              <Bar dataKey="value" fill="#34A853" name="Organic" />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
