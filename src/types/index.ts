@@ -1,6 +1,7 @@
 export interface BusinessReportData {
   date: string;
   sku: string;
+  parentAsin?: string;
   title?: string;
   sessions: number;
   unitsOrdered: number;

@@ -10,7 +10,8 @@ export interface ParseResult<T> {
 
 // Expected columns for Business Report
 const BR_COLUMN_MAPPINGS = {
-  sku: ['sku', 'asin', 'parent asin', 'child asin'],
+  sku: ['sku', 'asin', 'child asin'],
+  parentAsin: ['parent asin', 'parent'],
   title: ['title', 'product name', 'product title', 'name'],
   sessions: ['sessions', 'sessions - total', 'session count', 'total sessions'],
   unitsOrdered: ['units ordered', 'units sold', 'quantity sold', 'ordered units'],
@@ -86,6 +87,7 @@ export const parseBusinessReport = (file: File, reportDate: string): Promise<Par
           try {
             // Extract values using the mapped columns
             const sku = row[columnMap.sku] || '';
+            const parentAsin = columnMap.parentAsin ? (row[columnMap.parentAsin] || '').toString().trim() : undefined;
             const title = row[columnMap.title] || '';
             const sessions = row[columnMap.sessions] || '';
             const unitsOrdered = row[columnMap.unitsOrdered] || '';
@@ -120,6 +122,7 @@ export const parseBusinessReport = (file: File, reportDate: string): Promise<Par
             data.push({
               date: reportDate,
               sku: sku.toString().trim(),
+              parentAsin: parentAsin || undefined,
               title: title.toString().trim(),
               sessions: parsedSessions,
               unitsOrdered: parsedUnits,

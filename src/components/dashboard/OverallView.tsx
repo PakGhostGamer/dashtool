@@ -629,6 +629,7 @@ export function OverallView() {
               ]}
               maxRows={100}
               showFilters={false}
+              allBusinessReports={state.businessReports}
             />
           )}
         </CardContent>

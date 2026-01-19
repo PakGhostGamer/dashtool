@@ -191,6 +191,7 @@ export function OrganicView() {
                 ]}
                 maxRows={showAllProducts ? 1000 : 10}
                 showFilters={false}
+                allBusinessReports={state.businessReports}
               />
               {hasMoreProducts && (
                 <div className="flex justify-center mt-4">

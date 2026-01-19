@@ -562,6 +562,7 @@ export function ASINView() {
               ]}
               maxRows={50}
               showFilters={false}
+              allBusinessReports={state.businessReports}
             />
           )}
         </CardContent>
