@@ -2,35 +2,31 @@ import { BusinessReportData } from '../types';
 
 /**
  * Check if an ASIN is a Parent ASIN
- * A Parent ASIN is one where:
- * - It has a parentAsin field and it equals the sku (itself), OR
- * - It appears as a parentAsin for other ASINs (has children)
+ * Parent ASIN: When SKU (Child ASIN column) equals Parent ASIN column value
  */
 export function isParentAsin(asin: string, allBusinessReports: BusinessReportData[]): boolean {
   const asinLower = asin.toLowerCase().trim();
   
-  // Check if this ASIN has parentAsin field and it equals itself
+  // Find this ASIN in the data
   const asinData = allBusinessReports.find(br => br.sku.toLowerCase().trim() === asinLower);
-  if (asinData?.parentAsin && asinData.parentAsin.toLowerCase().trim() === asinLower) {
-    return true;
+  
+  if (!asinData?.parentAsin) {
+    // If no parentAsin data, check if this ASIN appears as parent for others
+    return allBusinessReports.some(br => 
+      br.parentAsin && 
+      br.parentAsin.toLowerCase().trim() === asinLower &&
+      br.sku.toLowerCase().trim() !== asinLower
+    );
   }
   
-  // Check if this ASIN appears as a parentAsin for other ASINs (has children)
-  const hasChildren = allBusinessReports.some(br => {
-    if (!br.parentAsin) return false;
-    const parentAsinLower = br.parentAsin.toLowerCase().trim();
-    const skuLower = br.sku.toLowerCase().trim();
-    // Parent ASIN should match but SKU should be different
-    return parentAsinLower === asinLower && skuLower !== asinLower;
-  });
-  
-  return hasChildren;
+  // If Parent ASIN column equals SKU column, it's a Parent ASIN
+  const parentAsinLower = asinData.parentAsin.toLowerCase().trim();
+  return parentAsinLower === asinLower;
 }
 
 /**
  * Check if an ASIN is a Child ASIN
- * A Child ASIN is one where:
- * - It has a parentAsin field and it's different from the sku
+ * Child ASIN: When SKU (Child ASIN column) is different from Parent ASIN column value
  */
 export function isChildAsin(asin: string, allBusinessReports: BusinessReportData[]): boolean {
   const asinLower = asin.toLowerCase().trim();
@@ -40,7 +36,7 @@ export function isChildAsin(asin: string, allBusinessReports: BusinessReportData
     return false;
   }
   
-  // If parentAsin exists and is different from sku, it's a child
+  // If Parent ASIN column is different from SKU column, it's a Child ASIN
   const parentAsinLower = asinData.parentAsin.toLowerCase().trim();
   return parentAsinLower !== asinLower;
 }
