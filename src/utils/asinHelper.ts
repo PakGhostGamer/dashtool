@@ -45,6 +45,18 @@ export function isChildAsin(asin: string, allBusinessReports: BusinessReportData
  * Get ASIN type badge - returns "P" for Parent, "C" for Child, or null
  */
 export function getAsinBadge(asin: string, allBusinessReports: BusinessReportData[]): 'P' | 'C' | null {
+  if (!asin || !allBusinessReports || allBusinessReports.length === 0) {
+    return null;
+  }
+  
+  // Debug: Log first few checks
+  if (allBusinessReports.length > 0) {
+    const firstReport = allBusinessReports[0];
+    if (firstReport && !firstReport.parentAsin) {
+      console.log('Warning: No parentAsin field found in business reports. Make sure Parent ASIN column exists in CSV.');
+    }
+  }
+  
   if (isParentAsin(asin, allBusinessReports)) {
     return 'P';
   }

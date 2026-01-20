@@ -124,22 +124,24 @@ export function FilterableTable({
     // Add ASIN type badge for SKU/ASIN columns
     if ((columnKey === 'sku' || columnKey === 'asin') && allBusinessReports.length > 0 && row) {
       const asinValue = row[columnKey] || row.sku || value;
-      const badge = getAsinBadge(String(asinValue), allBusinessReports);
-      if (badge) {
-        return (
-          <div className="flex items-center gap-2">
-            <span>{formattedValue}</span>
-            {badge === 'P' ? (
-              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold bg-gray-100 text-gray-700 border border-gray-300">
-                P
-              </span>
-            ) : (
-              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold bg-red-100 text-red-600 border border-red-300">
-                C
-              </span>
-            )}
-          </div>
-        );
+      if (asinValue) {
+        const badge = getAsinBadge(String(asinValue), allBusinessReports);
+        if (badge) {
+          return (
+            <div className="flex items-center gap-2">
+              <span>{formattedValue}</span>
+              {badge === 'P' ? (
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold bg-gray-100 text-gray-700 border border-gray-300">
+                  P
+                </span>
+              ) : (
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold bg-red-100 text-red-600 border border-red-300">
+                  C
+                </span>
+              )}
+            </div>
+          );
+        }
       }
     }
 

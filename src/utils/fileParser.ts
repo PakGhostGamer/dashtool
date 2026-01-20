@@ -87,7 +87,12 @@ export const parseBusinessReport = (file: File, reportDate: string): Promise<Par
           try {
             // Extract values using the mapped columns
             const sku = row[columnMap.sku] || '';
-            const parentAsin = columnMap.parentAsin ? (row[columnMap.parentAsin] || '').toString().trim() : undefined;
+            const parentAsinValue = columnMap.parentAsin ? row[columnMap.parentAsin] : null;
+            const parentAsin = parentAsinValue ? parentAsinValue.toString().trim() : undefined;
+            // Debug: Log parent ASIN detection
+            if (index < 3) {
+              console.log(`Row ${index + 1} - SKU: ${sku}, Parent ASIN: ${parentAsin}, Column detected: ${columnMap.parentAsin}`);
+            }
             const title = row[columnMap.title] || '';
             const sessions = row[columnMap.sessions] || '';
             const unitsOrdered = row[columnMap.unitsOrdered] || '';
