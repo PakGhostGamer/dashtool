@@ -50,14 +50,47 @@ export const parseBusinessReport = (file: File, reportDate: string): Promise<Par
         const missingColumns: string[] = [];
         
         Object.entries(BR_COLUMN_MAPPINGS).forEach(([key, possibleNames]) => {
-          let foundHeader = headers.find(h => {
-            // Normalize header: remove parentheses, extra spaces, convert to lowercase
-            const normalizedHeader = h.replace(/[()]/g, '').replace(/\s+/g, ' ').toLowerCase().trim();
-            return possibleNames.some(name => {
-              const normalizedName = name.replace(/[()]/g, '').replace(/\s+/g, ' ').toLowerCase().trim();
-              return normalizedHeader.includes(normalizedName) || normalizedHeader === normalizedName;
+          let foundHeader = null;
+          
+          // First try exact match (case-insensitive, ignoring parentheses and spaces)
+          for (const name of possibleNames) {
+            const normalizedName = name.replace(/[()]/g, '').replace(/\s+/g, ' ').toLowerCase().trim();
+            foundHeader = headers.find(h => {
+              const normalizedHeader = h.replace(/[()]/g, '').replace(/\s+/g, ' ').toLowerCase().trim();
+              return normalizedHeader === normalizedName;
             });
-          });
+            if (foundHeader) break;
+          }
+          
+          // If exact match not found, try partial match (but prioritize more specific matches)
+          if (!foundHeader) {
+            // For sku, prioritize "child" keyword
+            if (key === 'sku') {
+              foundHeader = headers.find(h => {
+                const normalizedHeader = h.replace(/[()]/g, '').replace(/\s+/g, ' ').toLowerCase().trim();
+                return normalizedHeader.includes('child') && normalizedHeader.includes('asin');
+              });
+            }
+            // For parentAsin, prioritize "parent" keyword
+            if (key === 'parentAsin' && !foundHeader) {
+              foundHeader = headers.find(h => {
+                const normalizedHeader = h.replace(/[()]/g, '').replace(/\s+/g, ' ').toLowerCase().trim();
+                return normalizedHeader.includes('parent') && normalizedHeader.includes('asin');
+              });
+            }
+            
+            // Fallback to general matching
+            if (!foundHeader) {
+              foundHeader = headers.find(h => {
+                const normalizedHeader = h.replace(/[()]/g, '').replace(/\s+/g, ' ').toLowerCase().trim();
+                return possibleNames.some(name => {
+                  const normalizedName = name.replace(/[()]/g, '').replace(/\s+/g, ' ').toLowerCase().trim();
+                  return normalizedHeader.includes(normalizedName);
+                });
+              });
+            }
+          }
+          
           // Fallback for sales: match any column with 'sales' in the name if not found
           if (!foundHeader && key === 'sales') {
             foundHeader = headers.find(h => h.includes('sales'));
