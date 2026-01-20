@@ -122,19 +122,22 @@ export function FilterableTable({
     }
 
     // Add ASIN type badge for SKU/ASIN columns
-    if ((columnKey === 'sku' || columnKey === 'asin') && allBusinessReports.length > 0 && row) {
+    if ((columnKey === 'sku' || columnKey === 'asin') && allBusinessReports && allBusinessReports.length > 0 && row) {
       const asinValue = row[columnKey] || row.sku || value;
       if (asinValue) {
+        console.log('FilterableTable - Checking badge for:', {
+          columnKey,
+          asinValue,
+          rowSku: row.sku,
+          rowAsin: row.asin,
+          allReportsCount: allBusinessReports.length,
+          hasParentAsin: allBusinessReports.some(br => br.parentAsin)
+        });
+        
         const badge = getAsinBadge(String(asinValue), allBusinessReports);
-        // Debug: Log badge check (only first few times)
-        if (!window._badgeDebugLogged) {
-          window._badgeDebugLogged = true;
-          console.log('Badge check - ASIN:', asinValue, 'Badge:', badge, 'All reports count:', allBusinessReports.length);
-          if (allBusinessReports.length > 0) {
-            console.log('Sample report:', allBusinessReports[0]);
-          }
-        }
+        
         if (badge) {
+          console.log('Badge found:', badge, 'for ASIN:', asinValue);
           return (
             <div className="flex items-center gap-2">
               <span>{formattedValue}</span>
@@ -149,6 +152,8 @@ export function FilterableTable({
               )}
             </div>
           );
+        } else {
+          console.log('No badge for ASIN:', asinValue);
         }
       }
     }

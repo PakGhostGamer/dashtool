@@ -46,16 +46,37 @@ export function isChildAsin(asin: string, allBusinessReports: BusinessReportData
  */
 export function getAsinBadge(asin: string, allBusinessReports: BusinessReportData[]): 'P' | 'C' | null {
   if (!asin || !allBusinessReports || allBusinessReports.length === 0) {
+    console.log('getAsinBadge: Early return - no ASIN or no reports', { asin, reportCount: allBusinessReports.length });
     return null;
   }
   
-  // Debug: Log first few checks
-  if (allBusinessReports.length > 0) {
-    const firstReport = allBusinessReports[0];
-    if (firstReport && !firstReport.parentAsin) {
-      console.log('Warning: No parentAsin field found in business reports. Make sure Parent ASIN column exists in CSV.');
-    }
+  // Debug: Check if parentAsin field exists
+  const hasParentAsin = allBusinessReports.some(br => br.parentAsin);
+  if (!hasParentAsin) {
+    console.warn('getAsinBadge: No parentAsin field found in any business reports. Make sure Parent ASIN column exists in CSV.');
+    console.log('Sample report structure:', allBusinessReports[0]);
+    return null;
   }
+  
+  // Find matching report for this ASIN
+  const asinData = allBusinessReports.find(br => {
+    const brSku = String(br.sku || '').toLowerCase().trim();
+    const asinLower = String(asin || '').toLowerCase().trim();
+    return brSku === asinLower;
+  });
+  
+  if (!asinData) {
+    console.log('getAsinBadge: No matching report found for ASIN:', asin);
+    return null;
+  }
+  
+  console.log('getAsinBadge:', {
+    asin,
+    sku: asinData.sku,
+    parentAsin: asinData.parentAsin,
+    isParent: isParentAsin(asin, allBusinessReports),
+    isChild: isChildAsin(asin, allBusinessReports)
+  });
   
   if (isParentAsin(asin, allBusinessReports)) {
     return 'P';
