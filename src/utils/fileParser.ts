@@ -50,9 +50,14 @@ export const parseBusinessReport = (file: File, reportDate: string): Promise<Par
         const missingColumns: string[] = [];
         
         Object.entries(BR_COLUMN_MAPPINGS).forEach(([key, possibleNames]) => {
-          let foundHeader = headers.find(h => 
-            possibleNames.some(name => h.replace(/\s+/g, ' ').includes(name.toLowerCase().replace(/\s+/g, ' ')))
-          );
+          let foundHeader = headers.find(h => {
+            // Normalize header: remove parentheses, extra spaces, convert to lowercase
+            const normalizedHeader = h.replace(/[()]/g, '').replace(/\s+/g, ' ').toLowerCase().trim();
+            return possibleNames.some(name => {
+              const normalizedName = name.replace(/[()]/g, '').replace(/\s+/g, ' ').toLowerCase().trim();
+              return normalizedHeader.includes(normalizedName) || normalizedHeader === normalizedName;
+            });
+          });
           // Fallback for sales: match any column with 'sales' in the name if not found
           if (!foundHeader && key === 'sales') {
             foundHeader = headers.find(h => h.includes('sales'));
