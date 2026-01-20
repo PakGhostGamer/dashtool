@@ -414,7 +414,7 @@ export function FilterableTable({
                     key={column.key}
                     className="py-3 px-4 text-gray-900"
                   >
-                    {formatCellValue(row[column.key], column.type, column.key)}
+                    {formatCellValue(row[column.key], column.type, column.key, row)}
                   </td>
                 ))}
               </tr>
