@@ -10,8 +10,8 @@ export interface ParseResult<T> {
 
 // Expected columns for Business Report
 const BR_COLUMN_MAPPINGS = {
-  sku: ['sku', 'asin', 'child asin'],
-  parentAsin: ['parent asin', 'parent'],
+  sku: ['sku', 'asin', 'child asin', '(child) asin'],
+  parentAsin: ['parent asin', 'parent', '(parent) asin'],
   title: ['title', 'product name', 'product title', 'name'],
   sessions: ['sessions', 'sessions - total', 'session count', 'total sessions'],
   unitsOrdered: ['units ordered', 'units sold', 'quantity sold', 'ordered units'],
