@@ -122,38 +122,35 @@ export function FilterableTable({
     }
 
     // Add ASIN type badge for SKU/ASIN columns
-    if ((columnKey === 'sku' || columnKey === 'asin') && allBusinessReports && allBusinessReports.length > 0 && row) {
-      const asinValue = row[columnKey] || row.sku || value;
-      if (asinValue) {
-        console.log('FilterableTable - Checking badge for:', {
-          columnKey,
-          asinValue,
-          rowSku: row.sku,
-          rowAsin: row.asin,
-          allReportsCount: allBusinessReports.length,
-          hasParentAsin: allBusinessReports.some(br => br.parentAsin)
-        });
+    // Check column-wise: Compare SKU column with Parent ASIN column in the same row
+    if ((columnKey === 'sku' || columnKey === 'asin') && row) {
+      const skuValue = row.sku || row[columnKey] || value;
+      const parentAsinValue = row.parentAsin;
+      
+      if (skuValue && parentAsinValue) {
+        const skuLower = String(skuValue).toLowerCase().trim();
+        const parentAsinLower = String(parentAsinValue).toLowerCase().trim();
         
-        const badge = getAsinBadge(String(asinValue), allBusinessReports);
-        
-        if (badge) {
-          console.log('Badge found:', badge, 'for ASIN:', asinValue);
+        // If SKU == Parent ASIN → Parent ASIN (P badge)
+        // If SKU != Parent ASIN → Child ASIN (C badge)
+        if (skuLower === parentAsinLower) {
           return (
             <div className="flex items-center gap-2">
               <span>{formattedValue}</span>
-              {badge === 'P' ? (
-                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold bg-gray-100 text-gray-700 border border-gray-300">
-                  P
-                </span>
-              ) : (
-                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold bg-red-100 text-red-600 border border-red-300">
-                  C
-                </span>
-              )}
+              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold bg-gray-100 text-gray-700 border border-gray-300">
+                P
+              </span>
             </div>
           );
         } else {
-          console.log('No badge for ASIN:', asinValue);
+          return (
+            <div className="flex items-center gap-2">
+              <span>{formattedValue}</span>
+              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold bg-red-100 text-red-600 border border-red-300">
+                C
+              </span>
+            </div>
+          );
         }
       }
     }
