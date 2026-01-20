@@ -2,47 +2,22 @@ import { BusinessReportData } from '../types';
 
 /**
  * Check if an ASIN is a Parent ASIN
- * Parent ASIN: When SKU (Child ASIN column) equals Parent ASIN column value
- * OR when this ASIN appears as a parentAsin value for other rows (has children)
+ * Parent ASIN: When SKU (Child ASIN column) equals Parent ASIN column value in the same row
  */
 export function isParentAsin(asin: string, allBusinessReports: BusinessReportData[]): boolean {
   const asinLower = asin.toLowerCase().trim();
   if (!asinLower) return false;
   
-  // First, check if this ASIN has its own row in the data
+  // Find this ASIN in the data (check if it has its own row)
   const asinData = allBusinessReports.find(br => br.sku.toLowerCase().trim() === asinLower);
   
-  if (asinData) {
-    // If this ASIN has a row, check if its parentAsin equals itself (Parent)
-    if (asinData.parentAsin) {
-      const parentAsinLower = asinData.parentAsin.toLowerCase().trim();
-      if (parentAsinLower === asinLower) {
-        return true; // It's a Parent ASIN (SKU == Parent ASIN)
-      }
-    }
-    
-    // If we found the row but parentAsin != sku, it's NOT a parent (it's a child)
-    // So we should not return true here
+  if (!asinData || !asinData.parentAsin) {
+    return false;
   }
   
-  // Second check: If this ASIN doesn't have its own row, check if it appears 
-  // as parentAsin value in other rows (has children)
-  // This handles cases where Parent ASIN doesn't have its own row
-  const hasChildren = allBusinessReports.some(br => {
-    if (!br.parentAsin) return false;
-    const brParentAsin = br.parentAsin.toLowerCase().trim();
-    const brSku = br.sku.toLowerCase().trim();
-    // If this ASIN is the parent ASIN for another row (and that row's SKU is different)
-    return brParentAsin === asinLower && brSku !== asinLower;
-  });
-  
-  // Only return true if it has children AND doesn't have its own row (or has own row where sku == parentAsin)
-  // If it has its own row where sku != parentAsin, it's a child, not parent
-  if (hasChildren && !asinData) {
-    return true; // Parent ASIN that doesn't have its own row but has children
-  }
-  
-  return false;
+  // If Parent ASIN column equals SKU column in the same row, it's a Parent ASIN
+  const parentAsinLower = asinData.parentAsin.toLowerCase().trim();
+  return parentAsinLower === asinLower;
 }
 
 /**
