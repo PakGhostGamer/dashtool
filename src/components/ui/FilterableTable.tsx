@@ -126,6 +126,14 @@ export function FilterableTable({
       const asinValue = row[columnKey] || row.sku || value;
       if (asinValue) {
         const badge = getAsinBadge(String(asinValue), allBusinessReports);
+        // Debug: Log badge check (only first few times)
+        if (!window._badgeDebugLogged) {
+          window._badgeDebugLogged = true;
+          console.log('Badge check - ASIN:', asinValue, 'Badge:', badge, 'All reports count:', allBusinessReports.length);
+          if (allBusinessReports.length > 0) {
+            console.log('Sample report:', allBusinessReports[0]);
+          }
+        }
         if (badge) {
           return (
             <div className="flex items-center gap-2">

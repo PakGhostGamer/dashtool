@@ -65,11 +65,14 @@ export const parseBusinessReport = (file: File, reportDate: string): Promise<Par
             if (originalHeader) {
               columnMap[key] = originalHeader;
             }
-          } else {
+          } else if (key !== 'parentAsin' && key !== 'title') {
+            // Only mark required columns as missing (parentAsin and title are optional)
             missingColumns.push(key);
           }
         });
-        // Debug: Log the detected sales column
+        // Debug: Log the detected columns
+        console.log('Detected columns:', columnMap);
+        console.log('Parent ASIN column detected:', columnMap.parentAsin);
         console.log('Detected sales column:', columnMap.sales);
 
         if (missingColumns.length > 0) {
