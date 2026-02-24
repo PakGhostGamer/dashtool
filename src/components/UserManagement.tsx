@@ -3,7 +3,7 @@ import { Input } from './ui/Input';
 import { Button } from './ui/Button';
 import { Card, CardContent, CardHeader } from './ui/Card';
 import { UserPlus, Trash2, Mail, Calendar, Shield, Crown, Clock } from 'lucide-react';
-import { getUsers, addUser, deleteUser, getCurrentUser, isAdmin, initializeUsers, User } from '../utils/userStorage';
+import { getUsers, addUser, deleteUser, getCurrentUser, isAdmin, User } from '../utils/userStorage';
 
 export function UserManagement() {
   const [users, setUsers] = useState<User[]>([]);
@@ -23,9 +23,6 @@ export function UserManagement() {
   };
 
   useEffect(() => {
-    // Initialize users first
-    initializeUsers();
-    
     const user = getCurrentUser();
     setCurrentUser(user);
     

@@ -18,38 +18,35 @@ const ADMIN_PASSWORD = 'Tool.ecomgliders.11';
 const MOHSIN_EMAIL = 'mohsin@ecomgliders.com';
 const MOHSIN_PASSWORD = 'Mohsin.11';
 
-// Initialize with default admin user if no users exist
+// Initialize with default admin user if no users exist.
+// Only adds/updates admin and mohsin in place; never removes other users (deleted users stay deleted).
 export function initializeUsers() {
   const users = getUsers();
   const adminEmailLower = ADMIN_EMAIL.toLowerCase();
-  const adminExists = users.some(u => u.email?.toLowerCase() === adminEmailLower);
-  
-  // Always ensure admin user exists with correct credentials
-  if (users.length === 0 || !adminExists) {
-    // Remove any existing admin user (in case email changed)
-    const filteredUsers = users.filter(u => u.email?.toLowerCase() !== adminEmailLower);
+  const mohsinEmailLower = MOHSIN_EMAIL.toLowerCase();
+
+  // 1) Ensure admin exists and has correct credentials (in place, don't replace list)
+  const adminIndex = users.findIndex(u => u.email?.toLowerCase() === adminEmailLower);
+  if (adminIndex !== -1) {
+    users[adminIndex].password = ADMIN_PASSWORD;
+    users[adminIndex].email = ADMIN_EMAIL;
+  } else {
     const defaultAdmin: User = {
       id: '1',
       name: 'Admin',
       email: ADMIN_EMAIL,
-      password: ADMIN_PASSWORD, // Should be hashed in production
+      password: ADMIN_PASSWORD,
       createdAt: new Date().toISOString()
     };
-    saveUsers([...filteredUsers, defaultAdmin]);
-  } else {
-    // Update admin password if admin exists but password might be wrong
-    const adminIndex = users.findIndex(u => u.email?.toLowerCase() === adminEmailLower);
-    if (adminIndex !== -1) {
-      users[adminIndex].password = ADMIN_PASSWORD;
-      users[adminIndex].email = ADMIN_EMAIL; // Ensure exact email match
-      saveUsers(users);
-    }
+    users.push(defaultAdmin);
   }
 
-  // Ensure mohsin@ecomgliders.com exists and can login to dashboard
-  const mohsinEmailLower = MOHSIN_EMAIL.toLowerCase();
-  let currentUsers = getUsers(); // Re-fetch after possible admin save
-  if (!currentUsers.some(u => u.email?.toLowerCase() === mohsinEmailLower)) {
+  // 2) Ensure mohsin exists and has correct credentials (in place, same list)
+  const mohsinIndex = users.findIndex(u => u.email?.toLowerCase() === mohsinEmailLower);
+  if (mohsinIndex !== -1) {
+    users[mohsinIndex].password = MOHSIN_PASSWORD;
+    users[mohsinIndex].email = MOHSIN_EMAIL;
+  } else {
     const mohsinUser: User = {
       id: (Date.now() + 1).toString(),
       name: 'Mohsin',
@@ -57,16 +54,11 @@ export function initializeUsers() {
       password: MOHSIN_PASSWORD,
       createdAt: new Date().toISOString()
     };
-    currentUsers.push(mohsinUser);
-    saveUsers(currentUsers);
-  } else {
-    const mohsinIndex = currentUsers.findIndex(u => u.email?.toLowerCase() === mohsinEmailLower);
-    if (mohsinIndex !== -1) {
-      currentUsers[mohsinIndex].password = MOHSIN_PASSWORD;
-      currentUsers[mohsinIndex].email = MOHSIN_EMAIL;
-      saveUsers(currentUsers);
-    }
+    users.push(mohsinUser);
   }
+
+  // Single save: all existing users (including any created in User Management) are preserved
+  saveUsers(users);
 }
 
 // Check if a user is admin - ONLY info@ecomgliders.com

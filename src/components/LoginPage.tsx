@@ -3,7 +3,7 @@ import { Input } from './ui/Input';
 import { Button } from './ui/Button';
 import { Card, CardContent, CardHeader } from './ui/Card';
 import { Lock, Mail } from 'lucide-react';
-import { authenticateUser, initializeUsers, setCurrentUser } from '../utils/userStorage';
+import { authenticateUser, setCurrentUser } from '../utils/userStorage';
 
 interface LoginPageProps {
   onSuccess: () => void;
@@ -14,11 +14,6 @@ export function LoginPage({ onSuccess }: LoginPageProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
-  React.useEffect(() => {
-    // Initialize users if needed
-    initializeUsers();
-  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +28,7 @@ export function LoginPage({ onSuccess }: LoginPageProps) {
 
     // Simulate a small delay for better UX
     setTimeout(() => {
-      const user = authenticateUser(email, password);
+      const user = authenticateUser(email.trim(), password.trim());
       
       if (user) {
         // Store current user and authentication
