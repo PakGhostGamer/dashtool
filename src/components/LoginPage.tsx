@@ -3,7 +3,7 @@ import { Input } from './ui/Input';
 import { Button } from './ui/Button';
 import { Card, CardContent, CardHeader } from './ui/Card';
 import { Lock, Mail } from 'lucide-react';
-import { authenticateUser, setCurrentUser } from '../utils/userStorage';
+import { authenticateUser, setCurrentUser, getUsers } from '../utils/userStorage';
 
 interface LoginPageProps {
   onSuccess: () => void;
@@ -34,12 +34,17 @@ export function LoginPage({ onSuccess }: LoginPageProps) {
       const user = authenticateUser(emailTrimmed, passwordTrimmed);
       
       if (user) {
-        // Store current user and authentication
         setCurrentUser(user);
         setIsLoading(false);
         onSuccess();
       } else {
-        setError('Invalid email or password. Please try again.');
+        const allUsers = getUsers();
+        const emailExists = allUsers.some(u => (u.email || '').toLowerCase().trim() === emailTrimmed.toLowerCase());
+        if (!emailExists) {
+          setError('No account with this email on this device. Log in as admin on this same website, go to User Management, and add this user first.');
+        } else {
+          setError('Invalid password. Please try again.');
+        }
         setIsLoading(false);
         setPassword('');
       }

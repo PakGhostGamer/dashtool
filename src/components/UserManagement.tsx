@@ -19,6 +19,7 @@ export function UserManagement() {
 
   const loadUsers = () => {
     const allUsers = getUsers();
+    console.log('[UserManagement] loadUsers', { count: allUsers.length, emails: allUsers.map(u => u.email) });
     setUsers(allUsers);
   };
 

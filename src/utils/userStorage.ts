@@ -18,49 +18,38 @@ const ADMIN_PASSWORD = 'Tool.ecomgliders.11';
 const MOHSIN_EMAIL = 'mohsin@ecomgliders.com';
 const MOHSIN_PASSWORD = 'Mohsin.11';
 
-// Initialize with default admin user if no users exist.
-// Only adds/updates admin and mohsin in place; never removes other users (deleted users stay deleted).
+// Only ensures admin and mohsin exist; never removes or overwrites other users.
 export function initializeUsers() {
   const users = getUsers();
-  console.log('[initializeUsers] Called', { userCount: users.length, emails: users.map(u => u.email) });
+  console.log('[initializeUsers] Called', { userCount: users.length, emails: users.map(u => u.email), storageKey: USERS_STORAGE_KEY });
   const adminEmailLower = ADMIN_EMAIL.toLowerCase();
   const mohsinEmailLower = MOHSIN_EMAIL.toLowerCase();
 
-  // 1) Ensure admin exists and has correct credentials (in place, don't replace list)
-  const adminIndex = users.findIndex(u => u.email?.toLowerCase() === adminEmailLower);
+  let changed = false;
+  let list = [...users];
+
+  const adminIndex = list.findIndex(u => (u.email || '').toLowerCase() === adminEmailLower);
   if (adminIndex !== -1) {
-    users[adminIndex].password = ADMIN_PASSWORD;
-    users[adminIndex].email = ADMIN_EMAIL;
+    list[adminIndex] = { ...list[adminIndex], password: ADMIN_PASSWORD, email: ADMIN_EMAIL };
+    changed = true;
   } else {
-    const defaultAdmin: User = {
-      id: '1',
-      name: 'Admin',
-      email: ADMIN_EMAIL,
-      password: ADMIN_PASSWORD,
-      createdAt: new Date().toISOString()
-    };
-    users.push(defaultAdmin);
+    list = [...list, { id: '1', name: 'Admin', email: ADMIN_EMAIL, password: ADMIN_PASSWORD, createdAt: new Date().toISOString() }];
+    changed = true;
   }
 
-  // 2) Ensure mohsin exists and has correct credentials (in place, same list)
-  const mohsinIndex = users.findIndex(u => u.email?.toLowerCase() === mohsinEmailLower);
+  const mohsinIndex = list.findIndex(u => (u.email || '').toLowerCase() === mohsinEmailLower);
   if (mohsinIndex !== -1) {
-    users[mohsinIndex].password = MOHSIN_PASSWORD;
-    users[mohsinIndex].email = MOHSIN_EMAIL;
+    list[mohsinIndex] = { ...list[mohsinIndex], password: MOHSIN_PASSWORD, email: MOHSIN_EMAIL };
+    changed = true;
   } else {
-    const mohsinUser: User = {
-      id: (Date.now() + 1).toString(),
-      name: 'Mohsin',
-      email: MOHSIN_EMAIL,
-      password: MOHSIN_PASSWORD,
-      createdAt: new Date().toISOString()
-    };
-    users.push(mohsinUser);
+    list = [...list, { id: (Date.now() + 1).toString(), name: 'Mohsin', email: MOHSIN_EMAIL, password: MOHSIN_PASSWORD, createdAt: new Date().toISOString() }];
+    changed = true;
   }
 
-  // Single save: all existing users (including any created in User Management) are preserved
-  saveUsers(users);
-  console.log('[initializeUsers] Done', { userCount: users.length, emails: users.map(u => u.email) });
+  if (changed) {
+    saveUsers(list);
+  }
+  console.log('[initializeUsers] Done', { userCount: list.length, emails: list.map(u => u.email) });
 }
 
 // Check if a user is admin - ONLY info@ecomgliders.com
@@ -101,21 +90,22 @@ export function getUsers(): User[] {
 
 export function saveUsers(users: User[]) {
   try {
-    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+    const json = JSON.stringify(users);
+    localStorage.setItem(USERS_STORAGE_KEY, json);
   } catch (error) {
-    console.error('Error saving users to localStorage:', error);
+    console.error('[saveUsers] Error saving to localStorage:', error, 'key:', USERS_STORAGE_KEY);
   }
 }
 
 export function addUser(email: string, password: string, name?: string): User | null {
-  const users = getUsers();
   const emailNormalized = email.trim().toLowerCase();
   const passwordTrimmed = password.trim();
 
-  console.log('[addUser] Called with', { emailNormalized, passwordLength: passwordTrimmed.length, existingUserCount: users.length, storedEmails: users.map(u => u.email) });
+  const users = getUsers();
+  console.log('[addUser] Called', { emailNormalized, passwordLength: passwordTrimmed.length, existingCount: users.length, storageKey: USERS_STORAGE_KEY });
 
-  if (users.some(u => u.email?.toLowerCase().trim() === emailNormalized)) {
-    console.log('[addUser] User already exists, skipping');
+  if (users.some(u => (u.email || '').toLowerCase().trim() === emailNormalized)) {
+    console.log('[addUser] User already exists');
     return null;
   }
 
@@ -127,9 +117,30 @@ export function addUser(email: string, password: string, name?: string): User | 
     createdAt: new Date().toISOString()
   };
 
-  users.push(newUser);
-  saveUsers(users);
-  console.log('[addUser] Saved new user', { email: newUser.email, id: newUser.id, totalUsers: users.length });
+  // Save as new array so we never mutate the array returned by getUsers()
+  const updatedList = [...users, newUser];
+  saveUsers(updatedList);
+
+  // Verify it was stored
+  const afterSave = getUsers();
+  const found = afterSave.some(u => (u.email || '').toLowerCase().trim() === emailNormalized);
+  if (!found) {
+    console.error('[addUser] Save failed: user not found after save. Read back count:', afterSave.length, 'expected:', updatedList.length);
+    // Retry once with fresh read
+    const retryList = getUsers();
+    if (!retryList.some(u => (u.email || '').toLowerCase().trim() === emailNormalized)) {
+      retryList.push(newUser);
+      saveUsers(retryList);
+      const verifyAgain = getUsers();
+      if (!verifyAgain.some(u => (u.email || '').toLowerCase().trim() === emailNormalized)) {
+        console.error('[addUser] Retry also failed. Check Application > Local Storage for key:', USERS_STORAGE_KEY);
+      } else {
+        console.log('[addUser] Retry succeeded');
+      }
+    }
+  } else {
+    console.log('[addUser] Saved and verified', { email: newUser.email, totalUsers: afterSave.length });
+  }
   return newUser;
 }
 
@@ -138,12 +149,17 @@ export function authenticateUser(email: string, password: string): User | null {
   const normalizedEmail = email.trim().toLowerCase();
   const passwordTrimmed = password.trim();
 
+  const storedEmailsList = users.map(u => u.email);
   console.log('[authenticateUser] Login attempt', {
     normalizedEmail,
     passwordLength: passwordTrimmed.length,
     totalUsers: users.length,
-    storedEmails: users.map(u => u.email),
+    storedEmails: storedEmailsList,
+    storedEmailsStr: storedEmailsList.join(' | '),
   });
+  if (users.length > 0 && !storedEmailsList.some(e => (e || '').toLowerCase().trim() === normalizedEmail)) {
+    console.warn('[authenticateUser] Your email is not in the stored list. Stored users:', storedEmailsList.join(', '), '- Create this user in User Management on THIS same website (same URL) and try again.');
+  }
 
   users.forEach((u, i) => {
     const emailMatch = (u.email || '').toLowerCase().trim() === normalizedEmail;
