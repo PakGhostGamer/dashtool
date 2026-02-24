@@ -28,7 +28,10 @@ export function LoginPage({ onSuccess }: LoginPageProps) {
 
     // Simulate a small delay for better UX
     setTimeout(() => {
-      const user = authenticateUser(email.trim(), password.trim());
+      const emailTrimmed = email.trim();
+      const passwordTrimmed = password.trim();
+      console.log('[LoginPage] Submitting', { email: emailTrimmed, passwordLength: passwordTrimmed.length });
+      const user = authenticateUser(emailTrimmed, passwordTrimmed);
       
       if (user) {
         // Store current user and authentication

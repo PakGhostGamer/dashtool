@@ -22,6 +22,7 @@ const MOHSIN_PASSWORD = 'Mohsin.11';
 // Only adds/updates admin and mohsin in place; never removes other users (deleted users stay deleted).
 export function initializeUsers() {
   const users = getUsers();
+  console.log('[initializeUsers] Called', { userCount: users.length, emails: users.map(u => u.email) });
   const adminEmailLower = ADMIN_EMAIL.toLowerCase();
   const mohsinEmailLower = MOHSIN_EMAIL.toLowerCase();
 
@@ -59,6 +60,7 @@ export function initializeUsers() {
 
   // Single save: all existing users (including any created in User Management) are preserved
   saveUsers(users);
+  console.log('[initializeUsers] Done', { userCount: users.length, emails: users.map(u => u.email) });
 }
 
 // Check if a user is admin - ONLY info@ecomgliders.com
@@ -110,9 +112,11 @@ export function addUser(email: string, password: string, name?: string): User | 
   const emailNormalized = email.trim().toLowerCase();
   const passwordTrimmed = password.trim();
 
-  // Check if user with email already exists
+  console.log('[addUser] Called with', { emailNormalized, passwordLength: passwordTrimmed.length, existingUserCount: users.length, storedEmails: users.map(u => u.email) });
+
   if (users.some(u => u.email?.toLowerCase().trim() === emailNormalized)) {
-    return null; // User already exists
+    console.log('[addUser] User already exists, skipping');
+    return null;
   }
 
   const newUser: User = {
@@ -125,6 +129,7 @@ export function addUser(email: string, password: string, name?: string): User | 
 
   users.push(newUser);
   saveUsers(users);
+  console.log('[addUser] Saved new user', { email: newUser.email, id: newUser.id, totalUsers: users.length });
   return newUser;
 }
 
@@ -132,11 +137,36 @@ export function authenticateUser(email: string, password: string): User | null {
   const users = getUsers();
   const normalizedEmail = email.trim().toLowerCase();
   const passwordTrimmed = password.trim();
+
+  console.log('[authenticateUser] Login attempt', {
+    normalizedEmail,
+    passwordLength: passwordTrimmed.length,
+    totalUsers: users.length,
+    storedEmails: users.map(u => u.email),
+  });
+
+  users.forEach((u, i) => {
+    const emailMatch = (u.email || '').toLowerCase().trim() === normalizedEmail;
+    const storedPw = (u.password || '').trim();
+    const passwordMatch = storedPw === passwordTrimmed;
+    if (emailMatch) {
+      console.log('[authenticateUser] User found by email', {
+        index: i,
+        storedEmail: u.email,
+        emailMatch,
+        passwordMatch,
+        storedPasswordLength: storedPw.length,
+        inputPasswordLength: passwordTrimmed.length,
+      });
+    }
+  });
+
   const userIndex = users.findIndex(
     u => u.email?.toLowerCase().trim() === normalizedEmail && (u.password || '').trim() === passwordTrimmed
   );
   
   if (userIndex !== -1) {
+    console.log('[authenticateUser] Success', { email: users[userIndex].email });
     const user = users[userIndex];
     const loginTime = new Date().toISOString();
     
@@ -161,6 +191,7 @@ export function authenticateUser(email: string, password: string): User | null {
     
     return user;
   }
+  console.log('[authenticateUser] No matching user, login failed');
   return null;
 }
 
