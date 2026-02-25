@@ -19,6 +19,19 @@ export interface User {
 
 const USERS_STORAGE_KEY = 'app_users';
 const CURRENT_USER_KEY = 'app_current_user';
+const SKIP_FIRESTORE_KEY = 'app_skip_firestore';
+
+function shouldUseFirestore(): boolean {
+  if (typeof sessionStorage === 'undefined') return false;
+  if (sessionStorage.getItem(SKIP_FIRESTORE_KEY)) return false;
+  return isFirebaseEnabled() && !!db;
+}
+
+function setSkipFirestore(): void {
+  try {
+    sessionStorage.setItem(SKIP_FIRESTORE_KEY, '1');
+  } catch (_) {}
+}
 // HARDCODED ADMIN - ONLY THIS USER IS ADMIN
 const ADMIN_EMAIL = 'info@ecomgliders.com';
 const ADMIN_PASSWORD = 'Tool.ecomgliders.11';
@@ -110,13 +123,21 @@ export function saveUsers(users: User[]) {
 
 export async function getUsersAsync(): Promise<User[]> {
   const local = getUsers();
-  if (isFirebaseEnabled() && db) {
-    try {
-      const remote = await getUsersFromFirestore(db);
-      const remoteIds = new Set(remote.map(u => u.id));
-      const onlyInLocal = local.filter(u => !remoteIds.has(u.id));
-      return [...remote, ...onlyInLocal];
-    } catch (e) {
+  if (!shouldUseFirestore() || !db) return local;
+  try {
+    const remote = await getUsersFromFirestore(db);
+    const remoteIds = new Set(remote.map(u => u.id));
+    const onlyInLocal = local.filter(u => !remoteIds.has(u.id));
+    return [...remote, ...onlyInLocal];
+  } catch (e: unknown) {
+    const msg = e && typeof e === 'object' && 'code' in e ? String((e as { code?: string }).code) : '';
+    if (msg === 'permission-denied' || (msg && msg.includes('permission'))) {
+      setSkipFirestore();
+      if (typeof sessionStorage !== 'undefined' && !sessionStorage.getItem(SKIP_FIRESTORE_KEY + '_logged')) {
+        sessionStorage.setItem(SKIP_FIRESTORE_KEY + '_logged', '1');
+        console.warn('[getUsersAsync] Firestore permission denied. Using localStorage. Fix rules: Firestore > Rules > allow read, write: if true for users');
+      }
+    } else {
       console.error('[getUsersAsync] Firestore error:', e);
     }
   }
@@ -124,7 +145,7 @@ export async function getUsersAsync(): Promise<User[]> {
 }
 
 export async function saveUsersAsync(users: User[]): Promise<void> {
-  if (isFirebaseEnabled() && db) {
+  if (shouldUseFirestore() && db) {
     try {
       await setUsersInFirestore(db, users);
     } catch (e) {
@@ -200,11 +221,13 @@ export async function addUserAsync(email: string, password: string, name?: strin
     createdAt: new Date().toISOString(),
   };
   const updatedList = [...users, newUser];
-  if (isFirebaseEnabled() && db) {
+  if (shouldUseFirestore() && db) {
     try {
       await addUserToFirestore(db, newUser);
-    } catch (e) {
-      console.error('[addUserAsync] Firestore write failed:', e);
+    } catch (e: unknown) {
+      const msg = e && typeof e === 'object' && 'code' in e ? String((e as { code?: string }).code) : '';
+      if (msg === 'permission-denied' || (msg && msg.includes('permission'))) setSkipFirestore();
+      else console.error('[addUserAsync] Firestore write failed:', e);
     }
   }
   saveUsers(updatedList);
@@ -293,7 +316,7 @@ export async function authenticateUserAsync(email: string, password: string): Pr
   user.loginHistory.push(loginTime);
   if (user.loginHistory.length > 10) user.loginHistory = user.loginHistory.slice(-10);
   user.email = user.email.toLowerCase().trim();
-  if (isFirebaseEnabled() && db) {
+  if (shouldUseFirestore() && db) {
     try {
       await updateUserInFirestore(db, user);
     } catch (e) {
@@ -414,7 +437,7 @@ export async function deleteUserAsync(userId: string): Promise<{ success: boolea
   if (!userToDelete) return { success: false, error: 'User not found' };
   if (isAdmin(userToDelete)) return { success: false, error: 'Admin user cannot be deleted' };
   const filtered = users.filter(u => u.id !== userId);
-  if (isFirebaseEnabled() && db) {
+  if (shouldUseFirestore() && db) {
     try {
       await deleteUserFromFirestore(db, userId);
     } catch (e) {
