@@ -3,7 +3,7 @@ import { Input } from './ui/Input';
 import { Button } from './ui/Button';
 import { Card, CardContent, CardHeader } from './ui/Card';
 import { UserPlus, Trash2, Mail, Calendar, Shield, Crown, Clock } from 'lucide-react';
-import { getUsers, addUser, deleteUser, getCurrentUser, isAdmin, User } from '../utils/userStorage';
+import { getUsersAsync, addUserAsync, deleteUserAsync, getCurrentUser, isAdmin, User } from '../utils/userStorage';
 
 export function UserManagement() {
   const [users, setUsers] = useState<User[]>([]);
@@ -17,8 +17,8 @@ export function UserManagement() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isChecking, setIsChecking] = useState(true);
 
-  const loadUsers = () => {
-    const allUsers = getUsers();
+  const loadUsers = async () => {
+    const allUsers = await getUsersAsync();
     console.log('[UserManagement] loadUsers', { count: allUsers.length, emails: allUsers.map(u => u.email) });
     setUsers(allUsers);
   };
@@ -26,15 +26,10 @@ export function UserManagement() {
   useEffect(() => {
     const user = getCurrentUser();
     setCurrentUser(user);
-    
-    // Check admin status
     const adminCheck = user && isAdmin(user);
-    
-    // Only load users if admin
     if (adminCheck) {
       loadUsers();
     }
-    
     setIsChecking(false);
   }, []);
 
@@ -67,7 +62,7 @@ export function UserManagement() {
     );
   }
 
-  const handleAddUser = (e: React.FormEvent) => {
+  const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -99,11 +94,10 @@ export function UserManagement() {
     }
 
     setIsLoading(true);
+    setError('');
 
-    // Simulate delay
-    setTimeout(() => {
-      const result = addUser(newEmail, newPassword, newName);
-
+    try {
+      const result = await addUserAsync(newEmail, newPassword, newName);
       if (result) {
         setSuccess(`User ${newName || newEmail} has been created successfully!`);
         setNewName('');
@@ -114,12 +108,16 @@ export function UserManagement() {
       } else {
         setError('A user with this email already exists');
       }
-
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to create user';
+      setError(msg);
+      console.error('[UserManagement] addUserAsync error:', err);
+    } finally {
       setIsLoading(false);
-    }, 300);
+    }
   };
 
-  const handleDeleteUser = (userId: string, userEmail: string, userName?: string) => {
+  const handleDeleteUser = async (userId: string, userEmail: string, userName?: string) => {
     const user = users.find(u => u.id === userId);
     
     // Check if trying to delete admin
@@ -133,7 +131,7 @@ export function UserManagement() {
       return;
     }
 
-    const result = deleteUser(userId);
+    const result = await deleteUserAsync(userId);
     if (result.success) {
       setSuccess(`User ${userName || userEmail} has been deleted successfully!`);
       loadUsers();

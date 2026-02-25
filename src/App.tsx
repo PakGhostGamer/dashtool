@@ -7,7 +7,7 @@ import { Dashboard } from './components/dashboard/Dashboard';
 import { LoginPage } from './components/LoginPage';
 import { NavBar } from './components/NavBar';
 import { UserManagement } from './components/UserManagement';
-import { getValidSessionUser, initializeUsers } from './utils/userStorage';
+import { getValidSessionUserAsync, initializeUsersAsync } from './utils/userStorage';
 import './utils/debugAdmin'; // Initialize debug utility for console
 
 function AppContent() {
@@ -83,12 +83,12 @@ function App() {
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    // Initialize users (ensures admin user exists)
-    initializeUsers();
-    // Restore session on reload: validate stored user and that they still exist in list
-    const sessionUser = getValidSessionUser();
-    setIsAuthenticated(sessionUser !== null);
-    setIsChecking(false);
+    (async () => {
+      await initializeUsersAsync();
+      const sessionUser = await getValidSessionUserAsync();
+      setIsAuthenticated(sessionUser !== null);
+      setIsChecking(false);
+    })();
   }, []);
 
   const handleAuthSuccess = () => {

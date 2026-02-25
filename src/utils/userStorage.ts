@@ -1,3 +1,12 @@
+import { db, isFirebaseEnabled } from './firebase';
+import {
+  getUsersFromFirestore,
+  addUserToFirestore,
+  updateUserInFirestore,
+  deleteUserFromFirestore,
+  setUsersInFirestore,
+} from './firestoreUsers';
+
 export interface User {
   id: string;
   name?: string;
@@ -97,6 +106,34 @@ export function saveUsers(users: User[]) {
   }
 }
 
+// ---------- Async APIs (Firestore when enabled, else localStorage) ----------
+
+export async function getUsersAsync(): Promise<User[]> {
+  const local = getUsers();
+  if (isFirebaseEnabled() && db) {
+    try {
+      const remote = await getUsersFromFirestore(db);
+      const remoteIds = new Set(remote.map(u => u.id));
+      const onlyInLocal = local.filter(u => !remoteIds.has(u.id));
+      return [...remote, ...onlyInLocal];
+    } catch (e) {
+      console.error('[getUsersAsync] Firestore error:', e);
+    }
+  }
+  return local;
+}
+
+export async function saveUsersAsync(users: User[]): Promise<void> {
+  if (isFirebaseEnabled() && db) {
+    try {
+      await setUsersInFirestore(db, users);
+    } catch (e) {
+      console.error('[saveUsersAsync] Firestore error:', e);
+    }
+  }
+  saveUsers(users);
+}
+
 export function addUser(email: string, password: string, name?: string): User | null {
   const emailNormalized = email.trim().toLowerCase();
   const passwordTrimmed = password.trim();
@@ -141,6 +178,36 @@ export function addUser(email: string, password: string, name?: string): User | 
   } else {
     console.log('[addUser] Saved and verified', { email: newUser.email, totalUsers: afterSave.length });
   }
+  return newUser;
+}
+
+export async function addUserAsync(email: string, password: string, name?: string): Promise<User | null> {
+  const emailNormalized = email.trim().toLowerCase();
+  const passwordTrimmed = password.trim();
+  let users: User[] = [];
+  try {
+    users = await getUsersAsync();
+  } catch (e) {
+    console.error('[addUserAsync] getUsersAsync failed:', e);
+    users = getUsers();
+  }
+  if (users.some(u => (u.email || '').toLowerCase().trim() === emailNormalized)) return null;
+  const newUser: User = {
+    id: Date.now().toString(),
+    name: name?.trim() || undefined,
+    email: emailNormalized,
+    password: passwordTrimmed,
+    createdAt: new Date().toISOString(),
+  };
+  const updatedList = [...users, newUser];
+  if (isFirebaseEnabled() && db) {
+    try {
+      await addUserToFirestore(db, newUser);
+    } catch (e) {
+      console.error('[addUserAsync] Firestore write failed:', e);
+    }
+  }
+  saveUsers(updatedList);
   return newUser;
 }
 
@@ -211,6 +278,33 @@ export function authenticateUser(email: string, password: string): User | null {
   return null;
 }
 
+export async function authenticateUserAsync(email: string, password: string): Promise<User | null> {
+  const users = await getUsersAsync();
+  const normalizedEmail = email.trim().toLowerCase();
+  const passwordTrimmed = password.trim();
+  const userIndex = users.findIndex(
+    u => u.email?.toLowerCase().trim() === normalizedEmail && (u.password || '').trim() === passwordTrimmed
+  );
+  if (userIndex === -1) return null;
+  const user = users[userIndex];
+  const loginTime = new Date().toISOString();
+  user.lastLoginAt = loginTime;
+  if (!user.loginHistory) user.loginHistory = [];
+  user.loginHistory.push(loginTime);
+  if (user.loginHistory.length > 10) user.loginHistory = user.loginHistory.slice(-10);
+  user.email = user.email.toLowerCase().trim();
+  if (isFirebaseEnabled() && db) {
+    try {
+      await updateUserInFirestore(db, user);
+    } catch (e) {
+      console.error('[authenticateUserAsync] Firestore update error:', e);
+    }
+  }
+  users[userIndex] = user;
+  saveUsers(users);
+  return user;
+}
+
 export function getCurrentUser(): User | null {
   try {
     const userJson = localStorage.getItem(CURRENT_USER_KEY);
@@ -238,6 +332,41 @@ export function getValidSessionUser(): User | null {
     return null;
   }
   return user;
+}
+
+export async function getValidSessionUserAsync(): Promise<User | null> {
+  const authFlag = localStorage.getItem('app_authenticated');
+  if (authFlag !== 'true') return null;
+  const user = getCurrentUser();
+  if (!user || !user.id) return null;
+  const users = await getUsersAsync();
+  const userEmail = (user.email || '').toLowerCase();
+  const stillExists = users.some(u => (u.id === user.id) || ((u.email || '').toLowerCase() === userEmail));
+  if (!stillExists) {
+    setCurrentUser(null);
+    return null;
+  }
+  return user;
+}
+
+export async function initializeUsersAsync(): Promise<void> {
+  const users = await getUsersAsync();
+  const adminEmailLower = ADMIN_EMAIL.toLowerCase();
+  const mohsinEmailLower = MOHSIN_EMAIL.toLowerCase();
+  let list = [...users];
+  const adminIndex = list.findIndex(u => (u.email || '').toLowerCase() === adminEmailLower);
+  if (adminIndex !== -1) {
+    list[adminIndex] = { ...list[adminIndex], password: ADMIN_PASSWORD, email: ADMIN_EMAIL };
+  } else {
+    list = [...list, { id: '1', name: 'Admin', email: ADMIN_EMAIL, password: ADMIN_PASSWORD, createdAt: new Date().toISOString() }];
+  }
+  const mohsinIndex = list.findIndex(u => (u.email || '').toLowerCase() === mohsinEmailLower);
+  if (mohsinIndex !== -1) {
+    list[mohsinIndex] = { ...list[mohsinIndex], password: MOHSIN_PASSWORD, email: MOHSIN_EMAIL };
+  } else {
+    list = [...list, { id: (Date.now() + 1).toString(), name: 'Mohsin', email: MOHSIN_EMAIL, password: MOHSIN_PASSWORD, createdAt: new Date().toISOString() }];
+  }
+  await saveUsersAsync(list);
 }
 
 export function setCurrentUser(user: User | null) {
@@ -276,5 +405,24 @@ export function deleteUser(userId: string): { success: boolean; error?: string }
     setCurrentUser(null);
   }
   
+  return { success: true };
+}
+
+export async function deleteUserAsync(userId: string): Promise<{ success: boolean; error?: string }> {
+  const users = await getUsersAsync();
+  const userToDelete = users.find(u => u.id === userId);
+  if (!userToDelete) return { success: false, error: 'User not found' };
+  if (isAdmin(userToDelete)) return { success: false, error: 'Admin user cannot be deleted' };
+  const filtered = users.filter(u => u.id !== userId);
+  if (isFirebaseEnabled() && db) {
+    try {
+      await deleteUserFromFirestore(db, userId);
+    } catch (e) {
+      console.error('[deleteUserAsync] Firestore error:', e);
+    }
+  }
+  saveUsers(filtered);
+  const currentUser = getCurrentUser();
+  if (currentUser?.id === userId) setCurrentUser(null);
   return { success: true };
 }
