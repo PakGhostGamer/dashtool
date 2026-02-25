@@ -7,7 +7,7 @@ import { Dashboard } from './components/dashboard/Dashboard';
 import { LoginPage } from './components/LoginPage';
 import { NavBar } from './components/NavBar';
 import { UserManagement } from './components/UserManagement';
-import { getCurrentUser, initializeUsers } from './utils/userStorage';
+import { getValidSessionUser, initializeUsers } from './utils/userStorage';
 import './utils/debugAdmin'; // Initialize debug utility for console
 
 function AppContent() {
@@ -85,11 +85,9 @@ function App() {
   useEffect(() => {
     // Initialize users (ensures admin user exists)
     initializeUsers();
-    
-    // Check if user is already authenticated
-    const currentUser = getCurrentUser();
-    const authenticated = localStorage.getItem('app_authenticated') === 'true' && currentUser !== null;
-    setIsAuthenticated(authenticated);
+    // Restore session on reload: validate stored user and that they still exist in list
+    const sessionUser = getValidSessionUser();
+    setIsAuthenticated(sessionUser !== null);
     setIsChecking(false);
   }, []);
 

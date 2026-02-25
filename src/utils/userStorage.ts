@@ -214,17 +214,39 @@ export function authenticateUser(email: string, password: string): User | null {
 export function getCurrentUser(): User | null {
   try {
     const userJson = localStorage.getItem(CURRENT_USER_KEY);
-    return userJson ? JSON.parse(userJson) : null;
+    if (!userJson) return null;
+    const parsed = JSON.parse(userJson) as User;
+    if (!parsed || typeof parsed !== 'object' || !parsed.email) return null;
+    return parsed;
   } catch (error) {
     console.error('Error reading current user:', error);
     return null;
   }
 }
 
+/** Use this on app load: returns current user only if session is valid and user still exists in list. Keeps session on reload. */
+export function getValidSessionUser(): User | null {
+  const authFlag = localStorage.getItem('app_authenticated');
+  if (authFlag !== 'true') return null;
+  const user = getCurrentUser();
+  if (!user || !user.id) return null;
+  const users = getUsers();
+  const stillExists = users.some(u => (u.id && u.id === user.id) || (u.email && u.email.toLowerCase() === (user.email || '').toLowerCase());
+  if (!stillExists) {
+    setCurrentUser(null);
+    return null;
+  }
+  return user;
+}
+
 export function setCurrentUser(user: User | null) {
   if (user) {
-    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
-    localStorage.setItem('app_authenticated', 'true');
+    try {
+      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+      localStorage.setItem('app_authenticated', 'true');
+    } catch (e) {
+      console.error('Error saving current user:', e);
+    }
   } else {
     localStorage.removeItem(CURRENT_USER_KEY);
     localStorage.removeItem('app_authenticated');
