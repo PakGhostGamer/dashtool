@@ -36,17 +36,11 @@ function setSkipFirestore(): void {
 const ADMIN_EMAIL = 'info@ecomgliders.com';
 const ADMIN_PASSWORD = 'Tool.ecomgliders.11';
 
-// Default dashboard user (can login, not admin)
-const MOHSIN_EMAIL = 'mohsin@ecomgliders.com';
-const MOHSIN_PASSWORD = 'Mohsin.11';
-
-// Only ensures admin and mohsin exist; never removes or overwrites other users.
+// Only ensures admin exists; never removes other users.
 export function initializeUsers() {
   const users = getUsers();
   console.log('[initializeUsers] Called', { userCount: users.length, emails: users.map(u => u.email), storageKey: USERS_STORAGE_KEY });
   const adminEmailLower = ADMIN_EMAIL.toLowerCase();
-  const mohsinEmailLower = MOHSIN_EMAIL.toLowerCase();
-
   let changed = false;
   let list = [...users];
 
@@ -56,15 +50,6 @@ export function initializeUsers() {
     changed = true;
   } else {
     list = [...list, { id: '1', name: 'Admin', email: ADMIN_EMAIL, password: ADMIN_PASSWORD, createdAt: new Date().toISOString() }];
-    changed = true;
-  }
-
-  const mohsinIndex = list.findIndex(u => (u.email || '').toLowerCase() === mohsinEmailLower);
-  if (mohsinIndex !== -1) {
-    list[mohsinIndex] = { ...list[mohsinIndex], password: MOHSIN_PASSWORD, email: MOHSIN_EMAIL };
-    changed = true;
-  } else {
-    list = [...list, { id: (Date.now() + 1).toString(), name: 'Mohsin', email: MOHSIN_EMAIL, password: MOHSIN_PASSWORD, createdAt: new Date().toISOString() }];
     changed = true;
   }
 
@@ -375,19 +360,12 @@ export async function getValidSessionUserAsync(): Promise<User | null> {
 export async function initializeUsersAsync(): Promise<void> {
   const users = await getUsersAsync();
   const adminEmailLower = ADMIN_EMAIL.toLowerCase();
-  const mohsinEmailLower = MOHSIN_EMAIL.toLowerCase();
   let list = [...users];
   const adminIndex = list.findIndex(u => (u.email || '').toLowerCase() === adminEmailLower);
   if (adminIndex !== -1) {
     list[adminIndex] = { ...list[adminIndex], password: ADMIN_PASSWORD, email: ADMIN_EMAIL };
   } else {
     list = [...list, { id: '1', name: 'Admin', email: ADMIN_EMAIL, password: ADMIN_PASSWORD, createdAt: new Date().toISOString() }];
-  }
-  const mohsinIndex = list.findIndex(u => (u.email || '').toLowerCase() === mohsinEmailLower);
-  if (mohsinIndex !== -1) {
-    list[mohsinIndex] = { ...list[mohsinIndex], password: MOHSIN_PASSWORD, email: MOHSIN_EMAIL };
-  } else {
-    list = [...list, { id: (Date.now() + 1).toString(), name: 'Mohsin', email: MOHSIN_EMAIL, password: MOHSIN_PASSWORD, createdAt: new Date().toISOString() }];
   }
   await saveUsersAsync(list);
 }
