@@ -231,7 +231,8 @@ export function getValidSessionUser(): User | null {
   const user = getCurrentUser();
   if (!user || !user.id) return null;
   const users = getUsers();
-  const stillExists = users.some(u => (u.id && u.id === user.id) || (u.email && u.email.toLowerCase() === (user.email || '').toLowerCase());
+  const userEmail = (user.email || '').toLowerCase();
+  const stillExists = users.some(u => (u.id === user.id) || ((u.email || '').toLowerCase() === userEmail));
   if (!stillExists) {
     setCurrentUser(null);
     return null;
